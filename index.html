@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام متابعة الحضور والدرجات - جامعة طيبة التكنولوجية</title>
-    <!-- استدعاء مكتبة ExcelJS المتقدمة لتلوين الخلايا وتنسيق الجداول -->
+    <!-- استدعاء مكتبات ExcelJS و FontAwesome والخطوط -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary: #003366;
@@ -17,6 +19,7 @@
             --danger: #ef4444;
             --warning: #f59e0b;
             --bg: #f8fafc;
+            --border-color: #cbd5e1;
         }
 
         body {
@@ -39,9 +42,9 @@
 
         .auth-wrapper {
             max-width: 480px;
-            margin: 50px auto;
+            margin: 30px auto;
             background: #ffffff;
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             border-top: 5px solid var(--primary);
@@ -52,7 +55,7 @@
             width: 140px;
             height: 90px;
             margin: 0 auto 15px auto;
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed var(--border-color);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -71,16 +74,24 @@
 
         .auth-wrapper h3 { margin: 0; font-size: 13px; color: #0284c7; font-weight: bold; }
         .auth-wrapper h2 { margin: 5px 0 5px 0; font-size: 20px; color: var(--primary); }
-        .auth-wrapper p { margin: 0 0 20px 0; font-size: 12px; color: #64748b; font-weight: 600; }
+        .auth-wrapper p { margin: 0 0 15px 0; font-size: 12px; color: #64748b; font-weight: 600; }
 
-        .auth-form-group { margin-bottom: 15px; text-align: right; }
-        .auth-form-group label { display: block; font-weight: bold; font-size: 13px; color: #475569; margin-bottom: 5px; }
-        .auth-form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
+        .auth-form-group { margin-bottom: 12px; text-align: right; }
+        .auth-form-group label { display: block; font-weight: bold; font-size: 12px; color: #475569; margin-bottom: 4px; }
+        .auth-form-group input { width: 100%; padding: 9px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box; }
         
-        .auth-btn { width: 100%; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
+        .auth-btn { width: 100%; padding: 9px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 8px; }
         .auth-btn:hover { background: #1d4ed8; }
-        .auth-switch { margin-top: 15px; font-size: 13px; color: #64748b; }
-        .auth-switch span { color: var(--secondary); cursor: pointer; font-weight: bold; }
+
+        .auth-footer-credit {
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.6;
+        }
 
         .user-top-bar {
             display: flex;
@@ -94,6 +105,7 @@
             font-weight: bold;
         }
 
+        /* Admin Box & Filter Options */
         .admin-panel-box {
             display: none;
             max-width: 1100px;
@@ -105,9 +117,51 @@
             border-top: 4px solid var(--warning);
         }
 
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 35px 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            font-size: 12px;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         .audit-log-container {
             background: #f8fafc;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
             max-height: 180px;
@@ -136,7 +190,7 @@
         .logo-box {
             width: 130px;
             height: 90px;
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed var(--border-color);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -176,7 +230,7 @@
         }
 
         .subject-bar {
-            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px 18px;
+            background: #f1f5f9; border: 1px solid var(--border-color); padding: 12px 18px;
             border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center;
             justify-content: space-between; gap: 15px; flex-wrap: wrap;
         }
@@ -185,7 +239,7 @@
         .nav-group label { font-weight: bold; font-size: 13px; color: var(--primary); }
 
         select.select-custom {
-            padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1;
+            padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color);
             font-weight: bold; font-size: 13px; background-color: #fff; color: var(--primary); cursor: pointer; outline: none;
         }
 
@@ -194,7 +248,7 @@
         }
 
         .summary-card {
-            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px;
+            background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px;
             padding: 15px; position: relative; transition: all 0.25s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         .summary-card:hover { background: #eff6ff; border-color: var(--secondary); box-shadow: 0 6px 15px rgba(37,99,235,0.1); transform: translateY(-2px); }
@@ -203,12 +257,12 @@
         .summary-preview { margin-top: 5px; font-size: 13px; color: #64748b; font-weight: 600; }
 
         .detailed-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, margin-top 0.3s ease; border-top: 0px solid transparent; }
-        .summary-card:hover .detailed-panel { max-height: 220px; margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+        .summary-card:hover .detailed-panel { max-height: 220px; margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
 
         .meta-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .input-group { display: flex; flex-direction: column; gap: 3px; }
         .input-group label { font-size: 11px; font-weight: bold; color: #475569; }
-        .input-group input, .input-group select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; outline: none; }
+        .input-group input, .input-group select { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: #fff; outline: none; }
         
         .grade-input-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 8px; border-radius: 8px; }
         .grade-input-box label { color: #b45309; }
@@ -231,7 +285,7 @@
             background: #f0fdf4; border: 1px solid #86efac; padding: 10px 15px; border-radius: 10px;
             margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
-        .add-student-box input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; }
+        .add-student-box input { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; outline: none; }
 
         .bottom-actions-bar {
             display: flex; justify-content: flex-end; align-items: center; gap: 10px;
@@ -245,10 +299,16 @@
         .btn-primary { background: var(--secondary); color: white; }
         .btn-success { background: var(--accent); color: white; }
         .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: #333; }
         .btn-export { background: #8b5cf6; color: white; }
         .btn-print { background: #0f766e; color: white; }
         .btn-clear { background: #f97316; color: white; }
         .btn-add-lec { background: #0284c7; color: white; }
+
+        .btn-outline-danger { border: 1px solid var(--danger); color: var(--danger); background: transparent; }
+        .btn-outline-success { border: 1px solid var(--accent); color: var(--accent); background: transparent; }
+        .btn-outline-danger:hover { background: var(--danger); color: white; }
+        .btn-outline-success:hover { background: var(--accent); color: white; }
 
         .file-upload-btn { background: #475569; color: white; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
@@ -262,36 +322,91 @@
         th.alert-col { background: #be123c; }
         tr:nth-child(even) { background: #f8fafc; }
 
-        .date-input { width: 80px; font-size: 9px; padding: 2px; margin-top: 3px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; }
+        .date-input { width: 80px; font-size: 9px; padding: 2px; margin-top: 3px; display: block; margin-left: auto; margin-right: auto; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; }
 
-        .status-cell { cursor: pointer; user-select: none; font-weight: bold; border-radius: 4px; padding: 4px; font-size: 12px; }
+        .status-cell { cursor: pointer; user-select: none; font-weight: bold; border-radius: 4px; padding: 4px 8px; font-size: 12px; display: inline-block; }
         .st-p { background: #d1fae5; color: #065f46; }
         .st-a { background: #fee2e2; color: #991b1b; }
         .st-e { background: #fef3c7; color: #92400e; }
 
         .badge { padding: 3px 8px; border-radius: 10px; font-weight: bold; font-size: 11px; display: inline-block; }
         .badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .badge-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-ok, .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .badge-role { background: #e0f2fe; color: #075985; }
 
         .filter-info-bar {
             background: #e0f2fe; border: 1px solid #7dd3fc; padding: 8px 15px; border-radius: 6px;
             font-size: 12px; color: #0369a1; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: bold;
         }
 
-        .footer-section { margin-top: 40px; padding: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #64748b; font-size: 13px; background: #fff; border-radius: 0 0 16px 16px; }
+        .no-data {
+            text-align: center;
+            padding: 15px;
+            color: #64748b;
+            display: none;
+            font-weight: bold;
+        }
 
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; border-radius: 0; width: 100%; max-width: 100%; padding: 0; }
-            .controls-bar, .logo-label, .auth-logo-label, .btn-danger, th:last-child, td:last-child, .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .summary-dashboard, .user-top-bar, .faculty-input-box input, .detailed-panel { display: none !important; }
+            
+            .controls-bar, .logo-label, .auth-logo-label, .btn-danger, th:last-child, td:last-child, 
+            .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .stats-grid, 
+            .user-top-bar, .faculty-input-box input, .detailed-panel, .subject-bar .nav-group button, 
+            select.select-custom, .summary-card span:last-child, .date-input { 
+                display: none !important; 
+            }
+
+            .subject-bar {
+                background: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 10px !important;
+                justify-content: center !important;
+            }
+
             .faculty-input-box::after { content: attr(data-print-val); font-weight: bold; font-size: 14px; color: #003366; display: block; }
+
+            .summary-dashboard {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                gap: 10px !important;
+                margin-bottom: 15px !important;
+                border-bottom: 2px solid var(--primary);
+                padding-bottom: 10px;
+            }
+
+            .summary-card {
+                border: 1px solid var(--border-color) !important;
+                padding: 8px 12px !important;
+                box-shadow: none !important;
+                background: #f8fafc !important;
+                flex: 1 !important;
+            }
+
+            .summary-header { font-size: 12px !important; }
+            .summary-preview { font-size: 11px !important; color: #334155 !important; }
+
+            .lec-col::after {
+                content: attr(data-date-val);
+                display: block;
+                font-size: 8px;
+                font-weight: normal;
+                color: #ffffff;
+            }
+
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; direction: rtl; page-break-inside: auto; }
             table { font-size: 9px; width: 100%; border: 1px solid #000; direction: rtl; page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             th, td { border: 1px solid #000 !important; padding: 3px 2px !important; }
-            .footer-section { margin-top: 20px; page-break-inside: avoid; }
+            
+            .st-p { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .st-a { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .st-e { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -317,59 +432,72 @@
             <input type="password" id="loginPass" placeholder="أدخل كلمة المرور...">
         </div>
         <button class="auth-btn" onclick="handleLogin()">دخول للنظام</button>
-        <div class="auth-switch">
-            ليس لديك حساب؟ <span onclick="switchAuthMode('register')">إنشاء حساب جديد</span>
+
+        <div class="auth-footer-credit">
+            تطوير الملكية الفكرية والتوثيق الرقمي © جامعة طيبة التكنولوجية 2026<br>
+            إعداد وتطوير: د. محمد ربيع محمد | كلية تكنولوجيا الصناعة والطاقة
         </div>
     </div>
 
-    <!-- 2. شاشة إنشاء حساب جديد -->
-    <div id="registerScreen" class="auth-wrapper" style="display: none;">
-        <div class="auth-logo-box" onclick="document.getElementById('authLogoInput2').click()" title="اضغط لتغيير الشعار">
-            <img id="authLogoPreview2" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="شعار جامعة طيبة التكنولوجية">
-            <div class="auth-logo-label">تغيير الشعار</div>
-            <input type="file" id="authLogoInput2" accept="image/*" style="display:none;" onchange="uploadAuthLogo(this)">
-        </div>
-        <h3>جامعة طيبة التكنولوجية</h3>
-        <h2>نظام متابعة الحضور والغياب والدرجات</h2>
-        <p>طلب حساب جديد للمستخدم</p>
-
-        <div class="auth-form-group">
-            <label>اختر اسم المستخدم:</label>
-            <input type="text" id="regUser" placeholder="اسم المستخدم بالانجليزية أو العربية...">
-        </div>
-        <div class="auth-form-group">
-            <label>اختر كلمة المرور:</label>
-            <input type="password" id="regPass" placeholder="كلمة المرور...">
-        </div>
-        <button class="auth-btn" style="background: var(--accent);" onclick="handleRegister()">طلب تسجيل حساب</button>
-        <div class="auth-switch">
-            لديك حساب بالفعل؟ <span onclick="switchAuthMode('login')">تسجيل الدخول</span>
-        </div>
-    </div>
-
-    <!-- 3. لوحة تحكم الأدمن -->
+    <!-- 2. لوحة تحكم الأدمن -->
     <div id="adminPanel" class="admin-panel-box">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
-            <h3 style="margin:0; color: var(--primary);">⚙️ لوحة تحكم المدير - إدارة المستخدمين وتغيير بياناتهم</h3>
+            <h3 style="margin:0; color: var(--primary);"><i class="fa-solid fa-users-gear"></i> لوحة تحكم المدير - إدارة المستخدمين</h3>
             <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="logout()">تسجيل الخروج</button>
         </div>
-        <p style="font-size:12px; color:#64748b;">تفعيل الحسابات الجديدة، وتعديل بيانات دخول المستخدمين (اسم المستخدم وكلمة المرور):</p>
-        
-        <div class="table-container" style="max-height:220px; margin-bottom: 20px;">
-            <table>
+
+        <!-- إضافة مستخدم جديد -->
+        <div class="add-student-box" style="background: #eff6ff; border-color: #93c5fd; margin-bottom: 15px;">
+            <strong style="color: var(--primary); font-size: 13px;"><i class="fa-solid fa-user-plus"></i> إضافة حساب جديد:</strong>
+            <input type="text" id="newAdminUser" placeholder="اسم المستخدم..." style="width: 160px;">
+            <input type="password" id="newAdminPass" placeholder="كلمة المرور..." style="width: 160px;">
+            <select id="newAdminRole" class="select-custom" style="padding: 5px;">
+                <option value="user">users</option>
+                <option value="admin">admin</option>
+            </select>
+            <button class="btn btn-success" onclick="addNewUserByAdmin()">إضافة الحساب</button>
+        </div>
+
+        <!-- البحث والتصفية -->
+        <div class="filter-section">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adminSearchInput" placeholder="بحث باسم المستخدم..." oninput="filterAdminUsers()">
+            </div>
+            
+            <div class="filter-options">
+                <select id="adminRoleFilter" class="select-custom" onchange="filterAdminUsers()">
+                    <option value="">جميع الأدوار</option>
+                    <option value="user">users</option>
+                    <option value="admin">admin</option>
+                </select>
+
+                <select id="adminStatusFilter" class="select-custom" onchange="filterAdminUsers()">
+                    <option value="">جميع الحالات</option>
+                    <option value="مفعل">مفعل</option>
+                    <option value="غير مفعل">غير مفعل</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- جدول الحسابات -->
+        <div class="table-container" style="max-height:250px; margin-bottom: 20px;">
+            <table id="adminUsersTable">
                 <thead>
                     <tr>
                         <th>اسم المستخدم</th>
                         <th>كلمة المرور</th>
+                        <th>النوع</th>
                         <th>الحالة</th>
-                        <th>الإجراءات (تعديل وتفعيل)</th>
+                        <th>الإجراءات والتعديل</th>
                     </tr>
                 </thead>
                 <tbody id="adminUsersTbody"></tbody>
             </table>
+            <div id="noAdminDataMessage" class="no-data">لا توجد نتائج تطابق بحثك.</div>
         </div>
 
-        <h4 style="margin: 0 0 8px 0; color: var(--primary);">📋 سجل الأنشطة الشامل للمنصة:</h4>
+        <h4 style="margin: 0 0 8px 0; color: var(--primary);"><i class="fa-solid fa-list-check"></i> سجل الأنشطة الشامل للمنصة:</h4>
         <div id="globalAuditLog" class="audit-log-container"></div>
 
         <div style="margin-top: 15px; text-align: left;">
@@ -377,7 +505,7 @@
         </div>
     </div>
 
-    <!-- 4. التطبيق الرئيسي (السجل والدرجات) -->
+    <!-- 3. التطبيق الرئيسي (السجل والدرجات) -->
     <div id="mainSystem" class="container" style="display: none;">
         
         <div class="user-top-bar">
@@ -538,30 +666,28 @@
                         <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
                         <th rowspan="2">حالة الطالب</th>
                         <th id="lecturesGroupHeader" colspan="1" style="background: #0f172a;">سجل المحاضرات المضافة</th>
-                        <th colspan="5" class="stat-col">التقرير النهائي والدرجات</th>
+                        <th colspan="6" class="stat-col">التقرير النهائي والدرجات (حضور وغياب ونسب)</th>
                         <th rowspan="2" class="alert-col">حالة الغياب / التنبيه</th>
                         <th rowspan="2">حذف</th>
                     </tr>
-                    <tr id="lectureHeaderRow"></tr>
+                    <tr id="lectureHeaderRow">
+                        <th class="stat-col">إجمالي حضور</th>
+                        <th class="stat-col">إجمالي غياب</th>
+                        <th class="stat-col">إجمالي أعذار</th>
+                        <th class="stat-col">نسبة الحضور</th>
+                        <th class="stat-col">نسبة الغياب</th>
+                        <th class="grade-col">درجة الحضور</th>
+                    </tr>
                 </thead>
                 <tbody id="studentsTbody"></tbody>
             </table>
         </div>
 
         <div class="bottom-actions-bar">
-            <button class="btn btn-success" onclick="manualSave()">💾 حفظ التعديلات واللوجوهات</button>
+            <button class="btn btn-success" onclick="manualSave()">💾 حفظ البيانات</button>
             <button class="btn btn-clear" onclick="clearStudentsList()">🧹 مسح جميع الطلاب</button>
             <button class="btn btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
-            <button class="btn btn-export" onclick="exportComprehensiveExcelWithColors()">📥 تصدير ملف إكسل الشامل (مع المعادلات والألوان)</button>
-        </div>
-
-        <div class="footer-section">
-            <div style="margin-bottom: 5px; font-weight: bold; color: #003366;">
-                تطوير الملكية الفكرية والتوثيق الرقمي © جامعة طيبة التكنولوجية 2026
-            </div>
-            <div style="color: #475569;">
-                إعداد وتطوير: د. محمد ربيع محمد | كلية تكنولوجيا الصناعة والطاقة
-            </div>
+            <button class="btn btn-export" onclick="exportComprehensiveExcelWithColors()">📥 تصدير إكسل</button>
         </div>
     </div>
 
@@ -608,7 +734,7 @@
     }
 
     function loadDB() {
-        let saved = localStorage.getItem('academic_auth_system_db_v17');
+        let saved = localStorage.getItem('academic_auth_system_db_v18');
         if (saved) {
             try { db = JSON.parse(saved); } catch(e){}
         }
@@ -621,7 +747,7 @@
     }
 
     function saveDB() {
-        localStorage.setItem('academic_auth_system_db_v17', JSON.stringify(db));
+        localStorage.setItem('academic_auth_system_db_v18', JSON.stringify(db));
     }
 
     function updateFacultyName(val) {
@@ -644,9 +770,7 @@
         let defaultLogo = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90' viewBox='0 0 140 90'%3E%3Crect width='140' height='90' fill='%23003366'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='Cairo' font-size='12'%3Eجامعة طيبة%3C/text%3E%3C/svg%3E";
         let logoToUse = db.authLogo || defaultLogo;
         let p1 = document.getElementById('authLogoPreview');
-        let p2 = document.getElementById('authLogoPreview2');
         if (p1) p1.src = logoToUse;
-        if (p2) p2.src = logoToUse;
     }
 
     function uploadAuthLogo(input) {
@@ -683,32 +807,29 @@
         }
     }
 
-    function switchAuthMode(mode) {
-        if (mode === 'register') {
-            document.getElementById('authScreen').style.display = 'none';
-            document.getElementById('registerScreen').style.display = 'block';
-        } else {
-            document.getElementById('registerScreen').style.display = 'none';
-            document.getElementById('authScreen').style.display = 'block';
-        }
-    }
+    function addNewUserByAdmin() {
+        let u = document.getElementById('newAdminUser').value.trim();
+        let p = document.getElementById('newAdminPass').value.trim();
+        let r = document.getElementById('newAdminRole').value;
 
-    function handleRegister() {
-        let u = document.getElementById('regUser').value.trim();
-        let p = document.getElementById('regPass').value.trim();
         if (!u || !p) {
-            alert("برجاء أدخل اسم المستخدم وكلمة المرور بدقة!");
+            alert("برجاء إدخال اسم المستخدم وكلمة المرور!");
             return;
         }
         if (db.users[u]) {
-            alert("اسم المستخدم موجود مسبقاً، اختر اسماً آخر!");
+            alert("اسم المستخدم هذا موجود بالفعل!");
             return;
         }
-        db.users[u] = { pass: p, active: false, role: "user" };
+
+        db.users[u] = { pass: p, active: true, role: r };
         saveDB();
-        logActivity(`طلب تسجيل حساب جديد للمستخدم: ${u}`);
-        alert("تم إرسال طلبك بنجاح! في انتظار موافقة وتفعيل مدير النظام (الأدمن).");
-        switchAuthMode('login');
+        logActivity(`قام المدير بإنشاء حساب جديد للمستخدم: ${u}`);
+        
+        document.getElementById('newAdminUser').value = '';
+        document.getElementById('newAdminPass').value = '';
+        
+        alert(`تم إنشاء حساب ${u} بنجاح!`);
+        renderAdminUsersTable();
     }
 
     function handleLogin() {
@@ -720,14 +841,13 @@
             return;
         }
         if (!db.users[u].active) {
-            alert("هذا الحساب في انتظار تفعيل الأدمن، برجاء التواصل مع مدير النظام.");
+            alert("هذا الحساب غير مفعّل، برجاء التواصل مع مدير النظام.");
             return;
         }
 
         currentUser = u;
         logActivity(`تسجيل دخول ناجح للمستخدم: ${u}`);
         document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('registerScreen').style.display = 'none';
         
         if (db.users[u].role === 'admin') {
             openAdminPanel();
@@ -743,6 +863,7 @@
         document.getElementById('authScreen').style.display = 'block';
         document.getElementById('loginUser').value = '';
         document.getElementById('loginPass').value = '';
+        updateAuthLogoUI();
     }
 
     function openAdminPanel() {
@@ -783,6 +904,7 @@
         renderTable();
     }
 
+    /* عرض إدارة المستخدمين في لوحة الأدمن + الفلترة المباشرة */
     function renderAdminUsersTable() {
         let tbody = document.getElementById('adminUsersTbody');
         if (!tbody) return;
@@ -793,21 +915,54 @@
             let tr = document.createElement('tr');
             
             let activeBadge = uData.active ? 
-                `<span class="badge badge-ok">مفعل</span>` : 
-                `<span class="badge badge-warning">معلق / بانتظار التفعيل</span>`;
+                `<span class="badge badge-success status-text">مفعل</span>` : 
+                `<span class="badge badge-danger status-text">غير مفعل</span>`;
             
+            let roleDisplay = uData.role === 'admin' ? 'admin' : 'user';
+
             tr.innerHTML = `
-                <td><input type="text" id="adm_user_${username}" value="${username}" style="padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;"></td>
-                <td><input type="text" id="adm_pass_${username}" value="${uData.pass}" style="padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                <td class="user-name"><input type="text" id="adm_user_${username}" value="${username}" style="padding:4px; font-size:12px; border:1px solid var(--border-color); border-radius:4px;"></td>
+                <td><input type="text" id="adm_pass_${username}" value="${uData.pass}" style="padding:4px; font-size:12px; border:1px solid var(--border-color); border-radius:4px;"></td>
+                <td><span class="badge badge-role user-role">${roleDisplay}</span></td>
                 <td>${activeBadge}</td>
-                <td>
-                    <button class="btn btn-primary" style="padding:3px 8px; font-size:11px;" onclick="saveAdminEditedUser('${username}')">حفظ التعديل</button>
-                    ${username !== 'admin' ? `<button class="btn ${uData.active ? 'btn-danger' : 'btn-success'}" style="padding:3px 8px; font-size:11px;" onclick="toggleUserActive('${username}')">${uData.active ? 'إيقاف' : 'تفعيل'}</button>` : ''}
-                    ${username !== 'admin' ? `<button class="btn btn-danger" style="padding:3px 8px; font-size:11px;" onclick="deleteUser('${username}')">حذف</button>` : ''}
+                <td class="actions-cell">
+                    <button class="btn btn-warning" style="padding:3px 8px; font-size:11px;" onclick="saveAdminEditedUser('${username}')"><i class="fa-solid fa-pen"></i> حفظ</button>
+                    ${username !== 'admin' ? `<button class="btn ${uData.active ? 'btn-outline-danger' : 'btn-outline-success'}" style="padding:3px 8px; font-size:11px;" onclick="toggleUserActive('${username}')">${uData.active ? '<i class="fa-solid fa-ban"></i> تعطيل' : '<i class="fa-solid fa-check"></i> تفعيل'}</button>` : ''}
+                    ${username !== 'admin' ? `<button class="btn btn-danger" style="padding:3px 8px; font-size:11px;" onclick="deleteUser('${username}')"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
                 </td>
             `;
             tbody.appendChild(tr);
         }
+        filterAdminUsers();
+    }
+
+    function filterAdminUsers() {
+        const searchVal = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+        const roleVal = document.getElementById('adminRoleFilter').value.toLowerCase();
+        const statusVal = document.getElementById('adminStatusFilter').value;
+
+        const rows = document.getElementById('adminUsersTbody').getElementsByTagName('tr');
+        let visibleCount = 0;
+
+        for (let row of rows) {
+            const username = row.querySelector('.user-name input').value.toLowerCase();
+            const role = row.querySelector('.user-role').textContent.toLowerCase();
+            const status = row.querySelector('.status-text').textContent;
+
+            const matchesSearch = username.includes(searchVal);
+            const matchesRole = roleVal === "" || role === roleVal;
+            const matchesStatus = statusVal === "" || status === statusVal;
+
+            if (matchesSearch && matchesRole && matchesStatus) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        }
+
+        const noDataMsg = document.getElementById('noAdminDataMessage');
+        if (noDataMsg) noDataMsg.style.display = visibleCount === 0 ? "block" : "none";
     }
 
     function saveAdminEditedUser(oldUsername) {
@@ -959,7 +1114,8 @@
         let pProg = document.getElementById('previewProgSummary');
         let pGrade = document.getElementById('previewGradeSummary');
 
-        if (pProf) pProf.innerText = subData.prof ? `أستاذ المادة: ${subData.prof}` : "د/ ...";
+        let assistantTxt = subData.assistant ? ` | المعاونون: ${subData.assistant}` : '';
+        if (pProf) pProf.innerText = subData.prof ? `أستاذ المادة: ${subData.prof}${assistantTxt}` : "د/ ...";
         if (pProg) pProg.innerText = `${subData.program || 'البرنامج'} / ${subData.term || 'الترم'}`;
         if (pGrade) pGrade.innerText = `الدرجة الكلية للحضور: ${subData.maxGrade}`;
     }
@@ -1077,7 +1233,8 @@
             return;
         }
 
-        levelData.students.push({ seatNo: seatNo, name: name, status: status });
+        let serialVal = levelData.students.length + 1;
+        levelData.students.push({ serial: serialVal, seatNo: seatNo, name: name, status: status });
         document.getElementById('manualSeatNo').value = '';
         document.getElementById('manualStudentName').value = '';
         saveDB();
@@ -1089,6 +1246,7 @@
         if (confirm("هل أنت متأكد من حذف هذا الطالب من الكشف؟")) {
             let levelData = db.levels[db.currentLevel];
             levelData.students = levelData.students.filter(s => s.seatNo !== seatNo);
+            levelData.students.forEach((s, idx) => s.serial = idx + 1);
             saveDB();
             renderTable();
             logActivity(`حذف الطالب برقم جلوس ${seatNo}`);
@@ -1122,14 +1280,15 @@
                 let addedCount = 0;
 
                 json.forEach((row, idx) => {
-                    if (idx === 0 && (String(row[0]).includes('اسم') || String(row[1]).includes('اسم'))) return;
+                    if (idx === 0 && (String(row[0]).includes('اسم') || String(row[1]).includes('اسم') || String(row[0]).includes('مسلسل'))) return;
                     if (row.length >= 2) {
-                        let seatNo = String(row[0] || row[1] || '').trim();
-                        let name = String(row[1] || row[0] || '').trim();
-                        let status = String(row[2] || 'مستجد').trim();
+                        let serialVal = String(row[0] || (levelData.students.length + addedCount + 1)).trim();
+                        let seatNo = String(row[1] || row[0] || '').trim();
+                        let name = String(row[2] || row[1] || '').trim();
+                        let status = String(row[3] || row[2] || 'مستجد').trim();
 
                         if (seatNo && name && !levelData.students.some(s => s.seatNo === seatNo)) {
-                            levelData.students.push({ seatNo: seatNo, name: name, status: status });
+                            levelData.students.push({ serial: serialVal, seatNo: seatNo, name: name, status: status });
                             addedCount++;
                         }
                     }
@@ -1151,8 +1310,8 @@
         let subData = levelData.subjects[levelData.currentSubject];
         if (!subData.attendance[seatNo]) subData.attendance[seatNo] = {};
         
-        let currentStatus = subData.attendance[seatNo][lecIdx] || 'P';
-        let nextStatus = currentStatus === 'P' ? 'A' : (currentStatus === 'A' ? 'E' : 'P');
+        let currentStatus = subData.attendance[seatNo][lecIdx] || 'ح';
+        let nextStatus = currentStatus === 'ح' ? 'غ' : (currentStatus === 'غ' ? 'ع' : 'ح');
         subData.attendance[seatNo][lecIdx] = nextStatus;
 
         saveDB();
@@ -1164,6 +1323,7 @@
         let subData = levelData.subjects[levelData.currentSubject];
         subData.dates[lecIdx] = val;
         saveDB();
+        renderTable();
     }
 
     function manualSave() {
@@ -1177,21 +1337,40 @@
         let subData = levelData.subjects[levelData.currentSubject];
         let lecCount = subData.lecCount || 1;
 
-        let lectureHeaderRow = document.getElementById('lectureHeaderRow');
         let lecturesGroupHeader = document.getElementById('lecturesGroupHeader');
-        lecturesGroupHeader.colSpan = lecCount;
+        if (lecturesGroupHeader) lecturesGroupHeader.colSpan = lecCount;
 
         let lecHeaderHtml = '';
         for (let i = 1; i <= lecCount; i++) {
             let savedDate = subData.dates[i] || '';
+            let printDateStr = savedDate ? ` (${savedDate})` : '';
             lecHeaderHtml += `
-                <th class="lec-col">
+                <th class="lec-col" data-date-val="${printDateStr}">
                     محاضرة ${i}
                     <input type="date" class="date-input" value="${savedDate}" onchange="updateLectureDate(${i}, this.value)">
                 </th>
             `;
         }
-        lectureHeaderRow.innerHTML = lecHeaderHtml;
+        
+        document.getElementById('topHeaderRow').innerHTML = `
+            <th rowspan="2">مسلسل</th>
+            <th rowspan="2">رقم الجلوس</th>
+            <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
+            <th rowspan="2">حالة الطالب</th>
+            <th id="lecturesGroupHeader" colspan="${lecCount}" style="background: #0f172a;">سجل المحاضرات المضافة</th>
+            <th colspan="6" class="stat-col">التقرير النهائي والدرجات</th>
+            <th rowspan="2" class="alert-col">حالة الغياب / التنبيه</th>
+            <th rowspan="2">حذف</th>
+        `;
+
+        document.getElementById('lectureHeaderRow').innerHTML = lecHeaderHtml + `
+            <th class="stat-col">إجمالي حضور</th>
+            <th class="stat-col">إجمالي غياب</th>
+            <th class="stat-col">إجمالي أعذار</th>
+            <th class="stat-col">نسبة الحضور</th>
+            <th class="stat-col">نسبة الغياب</th>
+            <th class="grade-col">درجة الحضور (${subData.maxGrade})</th>
+        `;
 
         let tbody = document.getElementById('studentsTbody');
         tbody.innerHTML = '';
@@ -1204,8 +1383,8 @@
             let seat = st.seatNo;
             let absentCount = 0;
             for (let i = 1; i <= lecCount; i++) {
-                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
-                if (stAtt === 'A') absentCount++;
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
+                if (stAtt === 'غ') absentCount++;
             }
             let absentRatio = lecCount > 0 ? (absentCount / lecCount) : 0;
             
@@ -1227,7 +1406,7 @@
 
         if (filteredStudents.length === 0) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="${8 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد بيانات طلاب مطابقة للعرض حالياً.</td>`;
+            tr.innerHTML = `<td colspan="${10 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد بيانات طلاب مطابقة للعرض حالياً.</td>`;
             tbody.appendChild(tr);
             return;
         }
@@ -1239,13 +1418,14 @@
             let excuseCount = 0;
 
             for (let i = 1; i <= lecCount; i++) {
-                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
-                if (stAtt === 'P') presentCount++;
-                else if (stAtt === 'A') absentCount++;
-                else if (stAtt === 'E') excuseCount++;
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
+                if (stAtt === 'ح') presentCount++;
+                else if (stAtt === 'غ') absentCount++;
+                else if (stAtt === 'ع') excuseCount++;
             }
 
             let absentRatio = lecCount > 0 ? (absentCount / lecCount) : 0;
+            let presentRatio = lecCount > 0 ? (presentCount / lecCount) : 0;
             let gradePerLec = subData.maxGrade / lecCount;
             let studentGrade = Math.max(0, subData.maxGrade - (absentCount * gradePerLec));
             studentGrade = Math.round(studentGrade * 100) / 100;
@@ -1259,27 +1439,27 @@
 
             let tr = document.createElement('tr');
             let rowHtml = `
-                <td>${idx + 1}</td>
+                <td>${st.serial || (idx + 1)}</td>
                 <td><strong>${seat}</strong></td>
                 <td style="text-align:right; font-weight:bold;">${st.name}</td>
                 <td><span class="badge badge-info">${st.status || 'مستجد'}</span></td>
             `;
 
             for (let i = 1; i <= lecCount; i++) {
-                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
-                let cls = stAtt === 'P' ? 'st-p' : (stAtt === 'A' ? 'st-a' : 'st-e');
-                let txt = stAtt === 'P' ? 'حاضر' : (stAtt === 'A' ? 'غائب' : 'عذر');
-                rowHtml += `<td><span class="status-cell ${cls}" onclick="toggleAttendance('${seat}', ${i})" title="اضغط لتبديل حالة الحضور">${txt}</span></td>`;
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
+                let cls = stAtt === 'ح' ? 'st-p' : (stAtt === 'غ' ? 'st-a' : 'st-e');
+                rowHtml += `<td><span class="status-cell ${cls}" onclick="toggleAttendance('${seat}', ${i})" title="اضغط لتبديل حالة الحضور">${stAtt}</span></td>`;
             }
 
             rowHtml += `
                 <td style="background:#f0fdf4; font-weight:bold; color:#065f46;">${presentCount}</td>
                 <td style="background:#fef2f2; font-weight:bold; color:#991b1b;">${absentCount}</td>
                 <td style="background:#fffbeb; font-weight:bold; color:#92400e;">${excuseCount}</td>
-                <td style="background:#f0fdf4; font-weight:bold; color:#065f46;">${(absentRatio * 100).toFixed(1)}%</td>
-                <td><span class="grade-badge">${studentGrade} / ${subData.maxGrade}</span></td>
+                <td style="background:#f0fdf4; font-weight:bold; color:#065f46;">${(presentRatio * 100).toFixed(1)}%</td>
+                <td style="background:#fef2f2; font-weight:bold; color:#991b1b;">${(absentRatio * 100).toFixed(1)}%</td>
+                <td style="background:#fef3c7; font-weight:bold; color:#b45309;">${studentGrade} / ${subData.maxGrade}</td>
                 <td>${badgeHtml}</td>
-                <td><button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="deleteStudent('${seat}')">حذف</button></td>
+                <td><button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="defaultDeleteStudent('${seat}')">حذف</button></td>
             `;
 
             tr.innerHTML = rowHtml;
@@ -1287,7 +1467,10 @@
         });
     }
 
-    // تصدير إكسل الشامل المدعوم بالمعادلات والألوان التلقائية التفاعلية
+    function defaultDeleteStudent(seatNo) {
+        deleteStudent(seatNo);
+    }
+
     async function exportComprehensiveExcelWithColors() {
         let levelData = db.levels[db.currentLevel];
         let subData = levelData.subjects[levelData.currentSubject];
@@ -1296,6 +1479,24 @@
         const workbook = new ExcelJS.Workbook();
         workbook.views = [{ RTL: true }];
         const sheet = workbook.addWorksheet('سجل الحضور والدرجات');
+
+        try {
+            if (db.univLogo && db.univLogo.startsWith('data:image')) {
+                let univBase64 = db.univLogo.split(',')[1];
+                let univImageId = workbook.addImage({ base64: univBase64, extension: 'png' });
+                sheet.addImage(univImageId, { tl: { col: 0, row: 0 }, ext: { width: 90, height: 60 } });
+            }
+        } catch(e){}
+
+        try {
+            let facLogoSrc = subData.logoUrl;
+            if (facLogoSrc && facLogoSrc.startsWith('data:image')) {
+                let facBase64 = facLogoSrc.split(',')[1];
+                let facImageId = workbook.addImage({ base64: facBase64, extension: 'png' });
+                let targetCol = Math.max(4, 4 + lecCount);
+                sheet.addImage(facImageId, { tl: { col: targetCol, row: 0 }, ext: { width: 90, height: 60 } });
+            }
+        } catch(e){}
 
         sheet.addRow([`جامعة طيبة التكنولوجية - ${db.facultyNameCustom}`]);
         sheet.addRow([`سجل متابعة الحضور والغياب والدرجات - ${db.currentLevel} - المادة: ${levelData.currentSubject}`]);
@@ -1307,7 +1508,7 @@
             let dStr = subData.dates[i] ? ` (${subData.dates[i]})` : '';
             headerRow.push(`محاضرة ${i}${dStr}`);
         }
-        headerRow.push("إجمالي الحضور", "إجمالي الغياب", "إجمالي الأعذار", "نسبة الغياب %", `درجة الحضور (${subData.maxGrade})`, "حالة التنبيه");
+        headerRow.push("إجمالي الحضور", "إجمالي الغياب", "إجمالي الأعذار", "نسبة الحضور", "نسبة الغياب", `درجة الحضور (${subData.maxGrade})`, "حالة التنبيه");
         
         let addedHeaderRow = sheet.addRow(headerRow);
         addedHeaderRow.font = { name: 'Cairo', bold: true, color: { argb: 'FFFFFFFF' } };
@@ -1318,39 +1519,33 @@
             cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
         });
 
-        // دوائر ومعادلات إكسل الحية لكل صف طالباً
         levelData.students.forEach((st, idx) => {
             let seat = st.seatNo;
             let rowNum = sheet.rowCount + 1;
-            let rowData = [idx + 1, seat, st.name, st.status || 'مستجد'];
+            let rowData = [st.serial || (idx + 1), seat, st.name, st.status || 'مستجد'];
 
             let rowAttStatuses = [];
             for (let i = 1; i <= lecCount; i++) {
-                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
                 rowData.push(stAtt);
                 rowAttStatuses.push(stAtt);
             }
 
-            // تحديد نطاق أعمدة المحاضرات لهذا الصف في الإكسل
             let startColLet = 'E';
             let endColLet = String.fromCharCode(64 + 4 + lecCount);
 
-            let presentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "P")`;
-            let absentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "A")`;
-            let excuseFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "E")`;
-            
-            // نسبة الغياب = (إجمالي الغياب / عدد المحاضرات)
-            let ratioFormula = `(${absentFormula}/${lecCount})`;
-            
-            // الدرجة النهائية = الدرجة الكلية - (إجمالي الغياب * (الدرجة الكلية / عدد المحاضرات))
+            let presentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "ح")`;
+            let absentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "غ")`;
+            let excuseFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "ع")`;
+            let presentRatioFormula = `(${presentFormula}/${lecCount})`;
+            let absentRatioFormula = `(${absentFormula}/${lecCount})`;
             let gradeFormula = `MAX(0, ${subData.maxGrade} - (${absentFormula} * (${subData.maxGrade}/${lecCount})))`;
 
-            rowData.push({ formula: presentFormula }, { formula: absentFormula }, { formula: excuseFormula }, { formula: ratioFormula }, { formula: gradeFormula });
+            rowData.push({ formula: presentFormula }, { formula: absentFormula }, { formula: excuseFormula }, { formula: presentRatioFormula }, { formula: absentRatioFormula }, { formula: gradeFormula });
             
-            // عمود التنبيه الإداري
             let absentCountVal = 0;
             for (let i = 1; i <= lecCount; i++) {
-                if (rowAttStatuses[i-1] === 'A') absentCountVal++;
+                if (rowAttStatuses[i-1] === 'غ') absentCountVal++;
             }
             let absentRatioVal = lecCount > 0 ? (absentCountVal / lecCount) : 0;
             let alertStatusTxt = "منتظم";
@@ -1362,16 +1557,15 @@
             r.alignment = { vertical: 'middle', horizontal: 'center' };
             r.font = { name: 'Cairo', size: 10 };
 
-            // تلوين وتنسيق خلايا الحضور والغياب ديناميكياً بناءً على القيم الحرفية P و A و E
             for (let i = 1; i <= lecCount; i++) {
                 let cell = r.getCell(4 + i);
                 let stVal = rowAttStatuses[i - 1];
                 cell.border = { top: {style:'thin', color:{argb:'FFCBD5E1'}}, left: {style:'thin', color:{argb:'FFCBD5E1'}}, bottom: {style:'thin', color:{argb:'FFCBD5E1'}}, right: {style:'thin', color:{argb:'FFCBD5E1'}} };
                 
-                if (stVal === 'P') {
+                if (stVal === 'ح') {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
                     cell.font = { color: { argb: 'FF065F46' }, bold: true };
-                } else if (stVal === 'A') {
+                } else if (stVal === 'غ') {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
                     cell.font = { color: { argb: 'FF991B1B' }, bold: true };
                 } else {
@@ -1380,13 +1574,11 @@
                 }
             }
 
-            // تنسيق أعمدة الحسابات والنسبة والدرجات
             for (let c = 5 + lecCount; c <= rowData.length; c++) {
                 let cell = r.getCell(c);
                 cell.border = { top: {style:'thin', color:{argb:'FFCBD5E1'}}, left: {style:'thin', color:{argb:'FFCBD5E1'}}, bottom: {style:'thin', color:{argb:'FFCBD5E1'}}, right: {style:'thin', color:{argb:'FFCBD5E1'}} };
             }
 
-            // تلوين خانة التنبيه النهائي بناءً على النسبة
             let alertCell = r.getCell(rowData.length);
             if (absentRatioVal >= 0.25) {
                 alertCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
@@ -1403,9 +1595,8 @@
         sheet.columns.forEach(column => {
             let maxLength = 12;
             column.eachCell({ includeEmpty: true }, (cell) => {
-                if (cell.value) {
-                    let valStr = typeof cell.value === 'object' && cell.value.formula ? cell.value.formula : cell.value.toString();
-                    let len = valStr.length;
+                if (cell.value && typeof cell.value !== 'object') {
+                    let len = cell.value.toString().length;
                     if (len > maxLength) maxLength = len;
                 }
             });
@@ -1414,8 +1605,8 @@
 
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `سجل_${db.currentLevel}_${levelData.currentSubject}_معادلات_وألوان.xlsx`);
-        logActivity(`تصدير ملف إكسل متقدم بالمعادلات والألوان الحية للمادة ${levelData.currentSubject}`);
+        saveAs(blob, `سجل_${db.currentLevel}_${levelData.currentSubject}_معادلات_ولوحوهات.xlsx`);
+        logActivity(`تصدير ملف إكسل متقدم بالمعادلات واللوجوهات للمادة ${levelData.currentSubject}`);
     }
 
     window.onload = function() {

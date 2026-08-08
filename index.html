@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سجل متابعة الحضور والغياب والدرجات - جامعة طيبة التكنولوجية</title>
+    <title>نظام متابعة الحضور والدرجات - جامعة طيبة التكنولوجية</title>
+    <!-- استدعاء مكتبة ExcelJS المتقدمة لتلوين الخلايا وتنسيق الجداول -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1e293b;
+            --primary: #003366;
             --secondary: #2563eb;
             --accent: #10b981;
             --danger: #ef4444;
@@ -18,7 +20,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
             background-color: var(--bg);
             margin: 0;
             padding: 20px;
@@ -26,7 +28,7 @@
             color: #334155;
         }
 
-        .container {
+        .auth-container, .admin-container, .container {
             max-width: 1600px;
             margin: 0 auto;
             background: #ffffff;
@@ -35,19 +37,105 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
 
+        .auth-wrapper {
+            max-width: 480px;
+            margin: 50px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--primary);
+            text-align: center;
+        }
+
+        .auth-logo-box {
+            width: 140px;
+            height: 90px;
+            margin: 0 auto 15px auto;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .auth-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .auth-logo-label {
+            position: absolute; bottom: 0; background: rgba(0, 51, 102, 0.85);
+            color: white; font-size: 8px; text-align: center; width: 100%; padding: 2px 0; font-weight: bold;
+        }
+
+        .auth-wrapper h3 { margin: 0; font-size: 13px; color: #0284c7; font-weight: bold; }
+        .auth-wrapper h2 { margin: 5px 0 5px 0; font-size: 20px; color: var(--primary); }
+        .auth-wrapper p { margin: 0 0 20px 0; font-size: 12px; color: #64748b; font-weight: 600; }
+
+        .auth-form-group { margin-bottom: 15px; text-align: right; }
+        .auth-form-group label { display: block; font-weight: bold; font-size: 13px; color: #475569; margin-bottom: 5px; }
+        .auth-form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
+        
+        .auth-btn { width: 100%; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
+        .auth-btn:hover { background: #1d4ed8; }
+        .auth-switch { margin-top: 15px; font-size: 13px; color: #64748b; }
+        .auth-switch span { color: var(--secondary); cursor: pointer; font-weight: bold; }
+
+        .user-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .admin-panel-box {
+            display: none;
+            max-width: 1100px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--warning);
+        }
+
+        .audit-log-container {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-size: 11px;
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .audit-log-item {
+            padding: 4px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            color: #475569;
+        }
+
         .header-section {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px dashed #e2e8f0;
+            border-bottom: 2px solid var(--primary);
             padding-bottom: 15px;
             margin-bottom: 20px;
             gap: 15px;
         }
 
         .logo-box {
-            width: 100px;
-            height: 100px;
+            width: 130px;
+            height: 90px;
             border: 2px dashed #cbd5e1;
             border-radius: 10px;
             display: flex;
@@ -57,105 +145,79 @@
             background: #ffffff;
             overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-
-        .logo-box img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
-
-        .logo-label {
-            position: absolute;
-            font-size: 11px;
-            color: #475569;
-            text-align: center;
             cursor: pointer;
-            width: 100%; 
-            height: 100%;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.95);
-            font-weight: 600;
-            z-index: 3;
         }
 
-        .header-title h2 { margin: 0; font-size: 16px; color: #0284c7; text-align: center; font-weight: bold; }
-        .header-title h1 { margin: 4px 0; font-size: 22px; color: var(--primary); text-align: center; }
-        .header-title h3 { margin: 0; font-size: 14px; color: #64748b; text-align: center; font-weight: normal; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .logo-label {
+            position: absolute; bottom: 0; background: rgba(0, 51, 102, 0.85);
+            color: white; font-size: 9px; text-align: center; width: 100%; padding: 2px 0; font-weight: bold;
+        }
+
+        .header-title h2 { margin: 0; font-size: 14px; color: #0284c7; text-align: center; font-weight: bold; }
+        .header-title h1 { margin: 4px 0; font-size: 20px; color: var(--primary); text-align: center; }
+        .header-title h3 { margin: 0; font-size: 12px; color: #64748b; text-align: center; font-weight: normal; }
+
+        .faculty-input-box {
+            margin: 6px auto;
+            text-align: center;
+        }
+        .faculty-input-box input {
+            padding: 4px 10px;
+            border: 1px dashed #0284c7;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            background: #f8fafc;
+            outline: none;
+            width: 280px;
+        }
 
         .subject-bar {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 12px 18px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
+            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px 18px;
+            border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center;
+            justify-content: space-between; gap: 15px; flex-wrap: wrap;
         }
 
         .nav-group { display: flex; align-items: center; gap: 10px; }
         .nav-group label { font-weight: bold; font-size: 13px; color: var(--primary); }
 
         select.select-custom {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-weight: bold;
-            font-size: 13px;
-            background-color: #fff;
-            color: var(--primary);
-            cursor: pointer;
-            outline: none;
+            padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1;
+            font-weight: bold; font-size: 13px; background-color: #fff; color: var(--primary); cursor: pointer; outline: none;
         }
 
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .summary-dashboard {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .summary-card {
+            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px;
+            padding: 15px; position: relative; transition: all 0.25s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .summary-card:hover { background: #eff6ff; border-color: var(--secondary); box-shadow: 0 6px 15px rgba(37,99,235,0.1); transform: translateY(-2px); }
+
+        .summary-header { display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--primary); }
+        .summary-preview { margin-top: 5px; font-size: 13px; color: #64748b; font-weight: 600; }
+
+        .detailed-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, margin-top 0.3s ease; border-top: 0px solid transparent; }
+        .summary-card:hover .detailed-panel { max-height: 220px; margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+
+        .meta-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .input-group { display: flex; flex-direction: column; gap: 3px; }
         .input-group label { font-size: 11px; font-weight: bold; color: #475569; }
-        .input-group input { padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .input-group input, .input-group select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; outline: none; }
         
-        .grade-input-box {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            padding: 5px 8px;
-            border-radius: 8px;
-        }
+        .grade-input-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 8px; border-radius: 8px; }
         .grade-input-box label { color: #b45309; }
         .grade-input-box input { border-color: #f59e0b; font-weight: bold; color: #b45309; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            border-top: 4px solid var(--secondary);
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-            user-select: none;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;
+            text-align: center; border-top: 4px solid var(--secondary); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; user-select: none;
         }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .stat-card.active-filter { background: #eff6ff; border-color: var(--secondary); }
@@ -164,59 +226,22 @@
         .stat-card h2 { margin: 0; font-size: 22px; color: var(--primary); }
         .stat-card p { margin: 3px 0 0 0; font-size: 11px; color: #64748b; font-weight: bold; }
 
-        .controls-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .add-student-box {
-            background: #f0fdf4;
-            border: 1px solid #86efac;
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            background: #f0fdf4; border: 1px solid #86efac; padding: 10px 15px; border-radius: 10px;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
-
-        .add-student-box input {
-            padding: 6px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 12px;
-            outline: none;
-        }
+        .add-student-box input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; }
 
         .bottom-actions-bar {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px dashed #e2e8f0;
-            flex-wrap: wrap;
+            display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+            margin-top: 20px; padding-top: 15px; border-top: 2px dashed #e2e8f0; flex-wrap: wrap;
         }
 
         .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px;
+            font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px;
         }
-
         .btn-primary { background: var(--secondary); color: white; }
         .btn-success { background: var(--accent); color: white; }
         .btn-danger { background: var(--danger); color: white; }
@@ -225,32 +250,10 @@
         .btn-clear { background: #f97316; color: white; }
         .btn-add-lec { background: #0284c7; color: white; }
 
-        .file-upload-btn {
-            background: #475569;
-            color: white;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        .file-upload-btn { background: #475569; color: white; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-        .table-container {
-            overflow-x: auto;
-            direction: ltr;
-            max-height: 500px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-            white-space: nowrap;
-            direction: rtl;
-        }
-
+        .table-container { overflow-x: auto; direction: ltr; max-height: 500px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; direction: rtl; }
         th, td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; }
         th { background: var(--primary); color: white; position: sticky; top: 0; z-index: 2; }
         th.lec-col { background: #334155; min-width: 85px; }
@@ -259,16 +262,9 @@
         th.alert-col { background: #be123c; }
         tr:nth-child(even) { background: #f8fafc; }
 
-        .date-input {
-            width: 80px; font-size: 9px; padding: 2px; margin-top: 3px;
-            display: block; margin-left: auto; margin-right: auto;
-            border: 1px solid #cbd5e1; border-radius: 4px; text-align: center;
-        }
+        .date-input { width: 80px; font-size: 9px; padding: 2px; margin-top: 3px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; }
 
-        .status-cell {
-            cursor: pointer; user-select: none; font-weight: bold;
-            border-radius: 4px; padding: 4px; font-size: 12px;
-        }
+        .status-cell { cursor: pointer; user-select: none; font-weight: bold; border-radius: 4px; padding: 4px; font-size: 12px; }
         .st-p { background: #d1fae5; color: #065f46; }
         .st-a { background: #fee2e2; color: #991b1b; }
         .st-e { background: #fef3c7; color: #92400e; }
@@ -279,913 +275,1152 @@
         .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-        .grade-badge {
-            background: #fef3c7;
-            color: #92400e;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #f59e0b;
-            font-size: 12px;
+        .filter-info-bar {
+            background: #e0f2fe; border: 1px solid #7dd3fc; padding: 8px 15px; border-radius: 6px;
+            font-size: 12px; color: #0369a1; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: bold;
         }
 
-        .filter-info-bar {
-            background: #e0f2fe;
-            border: 1px solid #7dd3fc;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: #0369a1;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: bold;
-        }
+        .footer-section { margin-top: 40px; padding: 20px; border-top: 2px solid #e2e8f0; text-align: center; color: #64748b; font-size: 13px; background: #fff; border-radius: 0 0 16px 16px; }
 
         @media print {
-            body { background: white; padding: 0; }
+            body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; border-radius: 0; width: 100%; max-width: 100%; padding: 0; }
-            .controls-bar, .logo-label, .btn-danger, th:last-child, td:last-child, .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .footer-section {
-                display: none !important;
-            }
-            .table-container { max-height: none; overflow: visible; border: none; direction: rtl; }
-            table { font-size: 10px; width: 100%; border: 1px solid #000; direction: rtl; }
-            th, td { border: 1px solid #000 !important; }
+            .controls-bar, .logo-label, .auth-logo-label, .btn-danger, th:last-child, td:last-child, .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .summary-dashboard, .user-top-bar, .faculty-input-box input, .detailed-panel { display: none !important; }
+            .faculty-input-box::after { content: attr(data-print-val); font-weight: bold; font-size: 14px; color: #003366; display: block; }
+            .table-container { max-height: none !important; overflow: visible !important; border: none !important; direction: rtl; page-break-inside: auto; }
+            table { font-size: 9px; width: 100%; border: 1px solid #000; direction: rtl; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th, td { border: 1px solid #000 !important; padding: 3px 2px !important; }
+            .footer-section { margin-top: 20px; page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-section">
-        <div class="logo-box">
-            <img id="univLogoPreview" style="display:none;">
-            <label class="logo-label" for="univLogoInput">شعار الجامعة</label>
-            <input type="file" id="univLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'univLogoPreview')">
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="authScreen" class="auth-wrapper">
+        <div class="auth-logo-box" onclick="document.getElementById('authLogoInput').click()" title="اضغط لتغيير الشعار">
+            <img id="authLogoPreview" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="شعار جامعة طيبة التكنولوجية">
+            <div class="auth-logo-label">تغيير الشعار</div>
+            <input type="file" id="authLogoInput" accept="image/*" style="display:none;" onchange="uploadAuthLogo(this)">
         </div>
+        <h3>جامعة طيبة التكنولوجية</h3>
+        <h2>نظام متابعة الحضور والغياب والدرجات</h2>
+        <p>تسجيل الدخول للمنظومة الأكاديمية</p>
 
-        <div class="header-title">
-            <h2>جامعة طيبة التكنولوجية - كلية تكنولوجيا الصناعة والطاقة</h2>
-            <h1 id="appMainHeader">سجل متابعة الحضور والغياب والدرجات</h1>
-            <h3>نظام إدارة المقررات والفرق الدراسية التفاعلي</h3>
+        <div class="auth-form-group">
+            <label>اسم المستخدم:</label>
+            <input type="text" id="loginUser" placeholder="أدخل اسم المستخدم...">
         </div>
-
-        <div class="logo-box">
-            <img id="facultyLogoPreview" style="display:none;">
-            <label class="logo-label" for="facultyLogoInput">شعار الكلية</label>
-            <input type="file" id="facultyLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'facultyLogoPreview')">
+        <div class="auth-form-group">
+            <label>كلمة المرور:</label>
+            <input type="password" id="loginPass" placeholder="أدخل كلمة المرور...">
+        </div>
+        <button class="auth-btn" onclick="handleLogin()">دخول للنظام</button>
+        <div class="auth-switch">
+            ليس لديك حساب؟ <span onclick="switchAuthMode('register')">إنشاء حساب جديد</span>
         </div>
     </div>
 
-    <div class="subject-bar">
-        <div class="nav-group">
-            <label>📍 الفرقة الدراسية:</label>
-            <select id="levelSelect" class="select-custom" onchange="switchLevel(this.value)">
-                <option value="الفرقة الأولى">الفرقة الأولى</option>
-                <option value="الفرقة الثانية">الفرقة الثانية</option>
-                <option value="الفرقة الثالثة">الفرقة الثالثة</option>
-                <option value="الفرقة الرابعة">الفرقة الرابعة</option>
-            </select>
+    <!-- 2. شاشة إنشاء حساب جديد -->
+    <div id="registerScreen" class="auth-wrapper" style="display: none;">
+        <div class="auth-logo-box" onclick="document.getElementById('authLogoInput2').click()" title="اضغط لتغيير الشعار">
+            <img id="authLogoPreview2" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="شعار جامعة طيبة التكنولوجية">
+            <div class="auth-logo-label">تغيير الشعار</div>
+            <input type="file" id="authLogoInput2" accept="image/*" style="display:none;" onchange="uploadAuthLogo(this)">
         </div>
+        <h3>جامعة طيبة التكنولوجية</h3>
+        <h2>نظام متابعة الحضور والغياب والدرجات</h2>
+        <p>طلب حساب جديد للمستخدم</p>
 
-        <div class="nav-group">
-            <label>📘 المادة:</label>
-            <select id="subjectSelect" class="select-custom" onchange="switchSubject(this.value)"></select>
+        <div class="auth-form-group">
+            <label>اختر اسم المستخدم:</label>
+            <input type="text" id="regUser" placeholder="اسم المستخدم بالانجليزية أو العربية...">
         </div>
-
-        <div class="nav-group">
-            <button class="btn btn-primary" onclick="addNewSubjectPrompt()">➕ إضافة مادة جديدة</button>
-            <button class="btn btn-danger" onclick="deleteCurrentSubjectPrompt()">🗑️ حذف المادة الحالية</button>
+        <div class="auth-form-group">
+            <label>اختر كلمة المرور:</label>
+            <input type="password" id="regPass" placeholder="كلمة المرور...">
+        </div>
+        <button class="auth-btn" style="background: var(--accent);" onclick="handleRegister()">طلب تسجيل حساب</button>
+        <div class="auth-switch">
+            لديك حساب بالفعل؟ <span onclick="switchAuthMode('login')">تسجيل الدخول</span>
         </div>
     </div>
 
-    <div class="meta-grid">
-        <div class="input-group">
-            <label>أستاذ المادة (الدكتور):</label>
-            <input type="text" id="profName" placeholder="د/ ..." oninput="updateMeta()">
+    <!-- 3. لوحة تحكم الأدمن -->
+    <div id="adminPanel" class="admin-panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+            <h3 style="margin:0; color: var(--primary);">⚙️ لوحة تحكم المدير - إدارة المستخدمين وتغيير بياناتهم</h3>
+            <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="logout()">تسجيل الخروج</button>
         </div>
-        <div class="input-group">
-            <label>المعيد / الهيئة المعاونة:</label>
-            <input type="text" id="assistantName" placeholder="م/ ..." oninput="updateMeta()">
+        <p style="font-size:12px; color:#64748b;">تفعيل الحسابات الجديدة، وتعديل بيانات دخول المستخدمين (اسم المستخدم وكلمة المرور):</p>
+        
+        <div class="table-container" style="max-height:220px; margin-bottom: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم المستخدم</th>
+                        <th>كلمة المرور</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات (تعديل وتفعيل)</th>
+                    </tr>
+                </thead>
+                <tbody id="adminUsersTbody"></tbody>
+            </table>
         </div>
-        <div class="input-group">
-            <label>البرنامج / التخصص:</label>
-            <input type="text" id="programName" placeholder="التخصص..." oninput="updateMeta()">
-        </div>
-        <div class="input-group">
-            <label>السنة الدراسية / الترم:</label>
-            <input type="text" id="termName" placeholder="الترم..." oninput="updateMeta()">
-        </div>
-        <div class="input-group grade-input-box">
-            <label>🎯 إجمالي درجة الحضور للمادة:</label>
-            <input type="number" id="maxGrade" value="15" min="1" step="0.5" oninput="updateMeta(); renderTable();" placeholder="مثال: 15 أو 20">
+
+        <h4 style="margin: 0 0 8px 0; color: var(--primary);">📋 سجل الأنشطة الشامل للمنصة:</h4>
+        <div id="globalAuditLog" class="audit-log-container"></div>
+
+        <div style="margin-top: 15px; text-align: left;">
+            <button class="btn btn-primary" onclick="showMainSystemFromAdmin()">الدخول إلى سجلات الرصد ➡️</button>
         </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card" id="card-all" onclick="setFilter('all')">
-            <h2 id="totalStudentsCnt">0</h2><p>كل طلاب الفرقة</p>
+    <!-- 4. التطبيق الرئيسي (السجل والدرجات) -->
+    <div id="mainSystem" class="container" style="display: none;">
+        
+        <div class="user-top-bar">
+            <div>👤 المستخدم الحالي: <span id="currentUserLabel" style="color:var(--secondary);"></span></div>
+            <div>
+                <span id="adminControlLink" style="display:none; margin-left: 15px; color: var(--warning); cursor: pointer;" onclick="openAdminPanel()">⚙️ لوحة تحكم المدير</span>
+                <span style="color: var(--danger); cursor: pointer;" onclick="logout()">🚪 تسجيل الخروج</span>
+            </div>
         </div>
-        <div class="stat-card" id="card-lectures" style="cursor:default; border-top-color: #64748b;">
-            <h2 id="totalLecturesCnt">1</h2><p>المحاضرات المضافة</p>
-        </div>
-        <div class="stat-card warning" id="card-warning" onclick="setFilter('warning')">
-            <h2 id="warningCnt">0</h2><p>إنذار غياب (≥15%)</p>
-        </div>
-        <div class="stat-card danger" id="card-banned" onclick="setFilter('banned')">
-            <h2 id="bannedCnt">0</h2><p>حرمان غياب (≥25%)</p>
-        </div>
-    </div>
 
-    <div id="filterInfoBar" class="filter-info-bar" style="display:none;">
-        <span id="filterInfoText">تصفية المعروض</span>
-        <button class="btn btn-primary" style="padding:2px 8px; font-size:10px;" onclick="setFilter('all')">عرض الكل</button>
-    </div>
+        <div class="header-section">
+            <div class="logo-box" onclick="document.getElementById('univLogoInput').click()" title="اضغط لتغيير شعار الجامعة">
+                <img id="univLogoPreview" src="https://via.placeholder.com/120x80/003366/FFFFFF?text=جامعة+طيبة" alt="شعار الجامعة">
+                <div class="logo-label">شعار الجامعة (تغيير)</div>
+                <input type="file" id="univLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'univLogoPreview', 'univLogo')">
+            </div>
 
-    <div class="controls-bar">
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <label class="file-upload-btn" for="excelFile">📂 استيراد من إكسل</label>
-            <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="display:none;">
-            
-            <button class="btn btn-add-lec" onclick="addLecture()">➕ إضافة محاضرة جديدة</button>
-            <button class="btn btn-danger btn-del-lec" onclick="removeLastLecture()">➖ حذف آخر محاضرة</button>
+            <div class="header-title">
+                <h2>جامعة طيبة التكنولوجية</h2>
+                <div class="faculty-input-box" id="facultyBoxWrapper" data-print-val="تكنولوجيا صناعة وطاقة">
+                    <input type="text" id="facultyNameInput" value="تكنولوجيا صناعة وطاقة" placeholder="اكتب اسم الكلية هنا..." oninput="updateFacultyName(this.value)">
+                </div>
+                <h1 id="appMainHeader">سجل متابعة الحضور والغياب والدرجات</h1>
+                <h3>نظام إدارة المقررات والفرق الدراسية التفاعلي</h3>
+            </div>
+
+            <div class="logo-box" onclick="document.getElementById('facultyLogoInput').click()" title="اضغط لتغيير شعار الكلية">
+                <img id="facultyLogoPreview" src="https://via.placeholder.com/120x80/2e7d32/ffffff?text=تكنولوجيا+الأخشاب" alt="شعار الكلية">
+                <div class="logo-label" id="facultyLogoLabelText">شعار الكلية (تغيير)</div>
+                <input type="file" id="facultyLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'facultyLogoPreview', 'facultyLogo')">
+            </div>
+        </div>
+
+        <div class="subject-bar">
+            <div class="nav-group">
+                <label>📍 الفرقة الدراسية:</label>
+                <select id="levelSelect" class="select-custom" onchange="switchLevel(this.value)">
+                    <option value="الفرقة الأولى">الفرقة الأولى</option>
+                    <option value="الفرقة الثانية">الفرقة الثانية</option>
+                    <option value="الفرقة الثالثة">الفرقة الثالثة</option>
+                    <option value="الفرقة الرابعة">الفرقة الرابعة</option>
+                </select>
+            </div>
+
+            <div class="nav-group">
+                <label>📘 المادة:</label>
+                <select id="subjectSelect" class="select-custom" onchange="switchSubject(this.value)"></select>
+            </div>
+
+            <div class="nav-group">
+                <button class="btn btn-primary" onclick="addNewSubjectPrompt()">➕ إضافة مادة جديدة</button>
+                <button class="btn btn-danger" onclick="deleteCurrentSubjectPrompt()">🗑️ حذف المادة الحالية</button>
+            </div>
+        </div>
+
+        <div class="summary-dashboard">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <span>👨‍🏫 هيئة التدريس</span>
+                    <span style="font-size: 11px; color: var(--secondary);">🔍 قف بالماوس للتفاصيل</span>
+                </div>
+                <div class="summary-preview" id="previewProfSummary">د/ ...</div>
+                <div class="detailed-panel">
+                    <div class="meta-grid">
+                        <div class="input-group">
+                            <label>أستاذ المادة (الدكتور):</label>
+                            <input type="text" id="profName" placeholder="د/ ..." oninput="updateMeta()">
+                        </div>
+                        <div class="input-group">
+                            <label>الهيئة المعاونة:</label>
+                            <input type="text" id="assistantName" placeholder="أسماء الهيئة المعاونة..." oninput="updateMeta()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-header">
+                    <span>🎓 الكلية والبرنامج</span>
+                    <span style="font-size: 11px; color: var(--secondary);">🔍 قف بالماوس للتفاصيل</span>
+                </div>
+                <div class="summary-preview" id="previewProgSummary">التخصص / الترم</div>
+                <div class="detailed-panel">
+                    <div class="meta-grid">
+                        <div class="input-group">
+                            <label>البرنامج / التخصص (حقل حر):</label>
+                            <input type="text" id="programInput" placeholder="أدخل اسم البرنامج أو التخصص..." oninput="updateProgramInput(this.value)">
+                        </div>
+                        <div class="input-group">
+                            <label>السنة الدراسية / الترم:</label>
+                            <input type="text" id="termName" placeholder="الترم الثاني 2026" oninput="updateMeta()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-header">
+                    <span>🎯 درجات الحضور</span>
+                    <span style="font-size: 11px; color: var(--secondary);">🔍 قف بالماوس للتفاصيل</span>
+                </div>
+                <div class="summary-preview" id="previewGradeSummary">الدرجة الكلية: 15</div>
+                <div class="detailed-panel">
+                    <div class="meta-grid">
+                        <div class="input-group grade-input-box">
+                            <label>🎯 إجمالي درجة الحضور للمادة:</label>
+                            <input type="number" id="maxGrade" value="15" min="1" step="0.5" oninput="updateMeta(); renderTable();" placeholder="مثال: 15">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card" id="card-all" onclick="setFilter('all')">
+                <h2 id="totalStudentsCnt">0</h2><p>كل طلاب الفرقة</p>
+            </div>
+            <div class="stat-card" id="card-lectures" style="cursor:default; border-top-color: #64748b;">
+                <h2 id="totalLecturesCnt">1</h2><p>المحاضرات المضافة</p>
+            </div>
+            <div class="stat-card warning" id="card-warning" onclick="setFilter('warning')">
+                <h2 id="warningCnt">0</h2><p>إنذار غياب (≥15%)</p>
+            </div>
+            <div class="stat-card danger" id="card-banned" onclick="setFilter('banned')">
+                <h2 id="bannedCnt">0</h2><p>حرمان غياب (≥25%)</p>
+            </div>
+        </div>
+
+        <div id="filterInfoBar" class="filter-info-bar" style="display:none;">
+            <span id="filterInfoText">تصفية المعروض</span>
+            <button class="btn btn-primary" style="padding:2px 8px; font-size:10px;" onclick="setFilter('all')">عرض الكل</button>
+        </div>
+
+        <div class="controls-bar">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label class="file-upload-btn" for="excelFile">📂 استيراد من إكسل</label>
+                <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importExcelFile(this)">
+                
+                <button class="btn btn-add-lec" onclick="addLecture()">➕ إضافة محاضرة جديدة</button>
+                <button class="btn btn-danger btn-del-lec" onclick="removeLastLecture()">➖ حذف آخر محاضرة</button>
+            </div>
+        </div>
+
+        <div class="add-student-box">
+            <strong style="color: #166534; font-size: 13px;">👤 إضافة طالب يدوي:</strong>
+            <input type="text" id="manualSeatNo" placeholder="رقم الجلوس" style="width: 110px;">
+            <input type="text" id="manualStudentName" placeholder="اسم الطالب بالكامل..." style="width: 230px;">
+            <input type="text" id="manualStudentStatus" placeholder="حالة الطالب..." value="مستجد" style="width: 160px;">
+            <button class="btn btn-success" onclick="addSingleStudentManual()">➕ إضافة للكشف</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr id="topHeaderRow">
+                        <th rowspan="2">مسلسل</th>
+                        <th rowspan="2">رقم الجلوس</th>
+                        <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
+                        <th rowspan="2">حالة الطالب</th>
+                        <th id="lecturesGroupHeader" colspan="1" style="background: #0f172a;">سجل المحاضرات المضافة</th>
+                        <th colspan="5" class="stat-col">التقرير النهائي والدرجات</th>
+                        <th rowspan="2" class="alert-col">حالة الغياب / التنبيه</th>
+                        <th rowspan="2">حذف</th>
+                    </tr>
+                    <tr id="lectureHeaderRow"></tr>
+                </thead>
+                <tbody id="studentsTbody"></tbody>
+            </table>
+        </div>
+
+        <div class="bottom-actions-bar">
+            <button class="btn btn-success" onclick="manualSave()">💾 حفظ التعديلات واللوجوهات</button>
+            <button class="btn btn-clear" onclick="clearStudentsList()">🧹 مسح جميع الطلاب</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+            <button class="btn btn-export" onclick="exportComprehensiveExcelWithColors()">📥 تصدير ملف إكسل الشامل (مع المعادلات والألوان)</button>
+        </div>
+
+        <div class="footer-section">
+            <div style="margin-bottom: 5px; font-weight: bold; color: #003366;">
+                تطوير الملكية الفكرية والتوثيق الرقمي © جامعة طيبة التكنولوجية 2026
+            </div>
+            <div style="color: #475569;">
+                إعداد وتطوير: د. محمد ربيع محمد | كلية تكنولوجيا الصناعة والطاقة
+            </div>
         </div>
     </div>
-
-    <div class="add-student-box">
-        <strong style="color: #166534; font-size: 13px;">👤 إضافة طالب يدوي:</strong>
-        <input type="text" id="manualSeatNo" placeholder="رقم الجلوس" style="width: 110px;">
-        <input type="text" id="manualStudentName" placeholder="اسم الطالب بالكامل..." style="width: 230px;">
-        <input type="text" id="manualStudentStatus" placeholder="حالة الطالب (مثلاً: مستجد / باقي)" value="مستجد" style="width: 160px;">
-        <button class="btn btn-success" onclick="addSingleStudentManual()">➕ إضافة للكشف</button>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr id="topHeaderRow">
-                    <th rowspan="2">مسلسل</th>
-                    <th rowspan="2">رقم الجلوس</th>
-                    <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
-                    <th rowspan="2">حالة الطالب</th>
-                    <th id="lecturesGroupHeader" colspan="1" style="background: #0f172a;">سجل المحاضرات المضافة</th>
-                    <th colspan="5" class="stat-col">التقرير النهائي والدرجات</th>
-                    <th rowspan="2" class="alert-col">حالة الغياب / التنبيه</th>
-                    <th rowspan="2">حذف</th>
-                </tr>
-                <tr id="lectureHeaderRow"></tr>
-            </thead>
-            <tbody id="studentsTbody"></tbody>
-        </table>
-    </div>
-
-    <div class="bottom-actions-bar">
-        <button class="btn btn-success" onclick="manualSave()">💾 حفظ التعديلات</button>
-        <button class="btn btn-clear" onclick="clearStudentsList()">🧹 مسح جميع الطلاب</button>
-        <button class="btn btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
-        <button class="btn btn-export" onclick="exportExcelWithStyles()">📥 تصدير ملف إكسل</button>
-    </div>
-
-    <div class="footer-section" style="margin-top: 40px; padding: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 13px;">
-        <div style="margin-bottom: 5px;">
-            &copy; 2026 جميع الحقوق محفوظة | جامعة طيبة التكنولوجية
-        </div>
-        <div style="font-weight: bold; color: #1e293b;">
-            تطوير د. محمد ربيع محمد | العام الأكاديمي 2026-2027
-        </div>
-    </div>
-</div>
 
 <script>
     let activeFilter = 'all';
+    let currentUser = null;
 
     let db = {
+        users: {
+            "admin": { pass: "admin123", active: true, role: "admin" }
+        },
+        logs: [],
+        univLogo: "https://via.placeholder.com/120x80/003366/FFFFFF?text=جامعة+طيبة",
+        authLogo: "",
+        facultyNameCustom: "تكنولوجيا صناعة وطاقة",
         currentLevel: "الفرقة الأولى",
         levels: {
             "الفرقة الأولى": {
                 students: [],
                 currentSubject: "مادة 1",
                 subjects: {
-                    "مادة 1": { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
+                    "مادة 1": { prof: "", assistant: "", program: "برنامج تكنولوجيا الصناعات الخشبية", logoUrl: "https://via.placeholder.com/120x80/2e7d32/ffffff?text=تكنولوجيا+الأخشاب", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
                 }
             }
         }
     };
 
-    function formatDateFormatted(dateStr) {
-        if (!dateStr) return '';
-        let parts = dateStr.split('-');
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        return dateStr;
+    function logActivity(actionDesc) {
+        let now = new Date();
+        let dateStr = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' });
+        let timeStr = now.toLocaleTimeString('ar-EG', { hour12: true });
+        let fullTime = `${dateStr} - ${timeStr}`;
+        
+        let logEntry = {
+            user: currentUser || 'زائر',
+            time: fullTime,
+            desc: actionDesc
+        };
+
+        if (!db.logs) db.logs = [];
+        db.logs.unshift(logEntry);
+        if (db.logs.length > 100) db.logs.pop();
+        saveDB();
     }
 
     function loadDB() {
-        const saved = localStorage.getItem('academic_multi_subject_system_v9');
+        let saved = localStorage.getItem('academic_auth_system_db_v17');
         if (saved) {
             try { db = JSON.parse(saved); } catch(e){}
         }
-
-        if (!db.levels[db.currentLevel]) {
-            initLevel(db.currentLevel);
+        if (!db.users) {
+            db.users = { "admin": { pass: "admin123", active: true, role: "admin" } };
         }
-
-        document.getElementById('levelSelect').value = db.currentLevel;
-        renderSubjectDropdown();
-        loadCurrentSubjectData();
-        renderHeader();
-        renderTable();
-    }
-
-    function initLevel(levelName) {
-        db.levels[levelName] = {
-            students: [],
-            currentSubject: "مادة 1",
-            subjects: {
-                "مادة 1": { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
-            }
-        };
+        if (!db.logs) db.logs = [];
+        if (!db.facultyNameCustom) db.facultyNameCustom = "تكنولوجيا صناعة وطاقة";
+        updateAuthLogoUI();
     }
 
     function saveDB() {
-        localStorage.setItem('academic_multi_subject_system_v9', JSON.stringify(db));
+        localStorage.setItem('academic_auth_system_db_v17', JSON.stringify(db));
     }
 
-    function getLevelData() {
-        return db.levels[db.currentLevel];
+    function updateFacultyName(val) {
+        db.facultyNameCustom = val;
+        let wrapper = document.getElementById('facultyBoxWrapper');
+        if (wrapper) wrapper.setAttribute('data-print-val', val);
+        saveDB();
     }
 
-    function getSubjectData() {
-        let lvl = getLevelData();
-        if (!lvl.subjects[lvl.currentSubject]) {
-            lvl.subjects[lvl.currentSubject] = { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} };
+    function updateProgramInput(val) {
+        let levelData = db.levels[db.currentLevel];
+        if (levelData && levelData.subjects[levelData.currentSubject]) {
+            levelData.subjects[levelData.currentSubject].program = val;
+            saveDB();
+            updateDashboardPreviews();
         }
-        if (lvl.subjects[lvl.currentSubject].maxGrade === undefined) lvl.subjects[lvl.currentSubject].maxGrade = 15;
-        if (!lvl.subjects[lvl.currentSubject].lecCount || lvl.subjects[lvl.currentSubject].lecCount < 1) lvl.subjects[lvl.currentSubject].lecCount = 1;
-        return lvl.subjects[lvl.currentSubject];
     }
 
-    function renderSubjectDropdown() {
-        let lvl = getLevelData();
-        let select = document.getElementById('subjectSelect');
-        select.innerHTML = '';
-        Object.keys(lvl.subjects).forEach(subj => {
-            let opt = document.createElement('option');
-            opt.value = subj;
-            opt.innerText = subj;
-            if (subj === lvl.currentSubject) opt.selected = true;
-            select.appendChild(opt);
+    function updateAuthLogoUI() {
+        let defaultLogo = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90' viewBox='0 0 140 90'%3E%3Crect width='140' height='90' fill='%23003366'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='Cairo' font-size='12'%3Eجامعة طيبة%3C/text%3E%3C/svg%3E";
+        let logoToUse = db.authLogo || defaultLogo;
+        let p1 = document.getElementById('authLogoPreview');
+        let p2 = document.getElementById('authLogoPreview2');
+        if (p1) p1.src = logoToUse;
+        if (p2) p2.src = logoToUse;
+    }
+
+    function uploadAuthLogo(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                db.authLogo = e.target.result;
+                updateAuthLogoUI();
+                saveDB();
+                logActivity("تم تحديث شعار نافذة الدخول");
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function uploadLogo(input, previewId, targetKey) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let res = e.target.result;
+                document.getElementById(previewId).src = res;
+                if (targetKey === 'univLogo') {
+                    db.univLogo = res;
+                } else if (targetKey === 'facultyLogo') {
+                    let levelData = db.levels[db.currentLevel];
+                    if (levelData && levelData.subjects[levelData.currentSubject]) {
+                        levelData.subjects[levelData.currentSubject].logoUrl = res;
+                    }
+                }
+                saveDB();
+                logActivity("تم تحديث الشعار البصري للمنظومة");
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function switchAuthMode(mode) {
+        if (mode === 'register') {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('registerScreen').style.display = 'block';
+        } else {
+            document.getElementById('registerScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+        }
+    }
+
+    function handleRegister() {
+        let u = document.getElementById('regUser').value.trim();
+        let p = document.getElementById('regPass').value.trim();
+        if (!u || !p) {
+            alert("برجاء أدخل اسم المستخدم وكلمة المرور بدقة!");
+            return;
+        }
+        if (db.users[u]) {
+            alert("اسم المستخدم موجود مسبقاً، اختر اسماً آخر!");
+            return;
+        }
+        db.users[u] = { pass: p, active: false, role: "user" };
+        saveDB();
+        logActivity(`طلب تسجيل حساب جديد للمستخدم: ${u}`);
+        alert("تم إرسال طلبك بنجاح! في انتظار موافقة وتفعيل مدير النظام (الأدمن).");
+        switchAuthMode('login');
+    }
+
+    function handleLogin() {
+        let u = document.getElementById('loginUser').value.trim();
+        let p = document.getElementById('loginPass').value.trim();
+        
+        if (!db.users[u] || db.users[u].pass !== p) {
+            alert("اسم المستخدم أو كلمة المرور غير صحيحة!");
+            return;
+        }
+        if (!db.users[u].active) {
+            alert("هذا الحساب في انتظار تفعيل الأدمن، برجاء التواصل مع مدير النظام.");
+            return;
+        }
+
+        currentUser = u;
+        logActivity(`تسجيل دخول ناجح للمستخدم: ${u}`);
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('registerScreen').style.display = 'none';
+        
+        if (db.users[u].role === 'admin') {
+            openAdminPanel();
+        } else {
+            openMainSystem();
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('mainSystem').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'block';
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+    }
+
+    function openAdminPanel() {
+        document.getElementById('mainSystem').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        renderAdminUsersTable();
+        renderGlobalAuditLog();
+    }
+
+    function showMainSystemFromAdmin() {
+        document.getElementById('adminPanel').style.display = 'none';
+        openMainSystem();
+    }
+
+    function openMainSystem() {
+        document.getElementById('mainSystem').style.display = 'block';
+        document.getElementById('currentUserLabel').innerText = currentUser;
+        
+        if (db.users[currentUser] && db.users[currentUser].role === 'admin') {
+            document.getElementById('adminControlLink').style.display = 'inline';
+        } else {
+            document.getElementById('adminControlLink').style.display = 'none';
+        }
+
+        let facInput = document.getElementById('facultyNameInput');
+        if (facInput) {
+            facInput.value = db.facultyNameCustom || "تكنولوجيا صناعة وطاقة";
+            updateFacultyName(facInput.value);
+        }
+
+        let univImg = document.getElementById('univLogoPreview');
+        if (univImg && db.univLogo) univImg.src = db.univLogo;
+
+        initLevelData();
+        populateLevelSelect();
+        populateSubjectSelect();
+        loadCurrentSubjectToUI();
+        renderTable();
+    }
+
+    function renderAdminUsersTable() {
+        let tbody = document.getElementById('adminUsersTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        for (let username in db.users) {
+            let uData = db.users[username];
+            let tr = document.createElement('tr');
+            
+            let activeBadge = uData.active ? 
+                `<span class="badge badge-ok">مفعل</span>` : 
+                `<span class="badge badge-warning">معلق / بانتظار التفعيل</span>`;
+            
+            tr.innerHTML = `
+                <td><input type="text" id="adm_user_${username}" value="${username}" style="padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                <td><input type="text" id="adm_pass_${username}" value="${uData.pass}" style="padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                <td>${activeBadge}</td>
+                <td>
+                    <button class="btn btn-primary" style="padding:3px 8px; font-size:11px;" onclick="saveAdminEditedUser('${username}')">حفظ التعديل</button>
+                    ${username !== 'admin' ? `<button class="btn ${uData.active ? 'btn-danger' : 'btn-success'}" style="padding:3px 8px; font-size:11px;" onclick="toggleUserActive('${username}')">${uData.active ? 'إيقاف' : 'تفعيل'}</button>` : ''}
+                    ${username !== 'admin' ? `<button class="btn btn-danger" style="padding:3px 8px; font-size:11px;" onclick="deleteUser('${username}')">حذف</button>` : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function saveAdminEditedUser(oldUsername) {
+        let newUserInput = document.getElementById(`adm_user_${oldUsername}`).value.trim();
+        let newPassInput = document.getElementById(`adm_pass_${oldUsername}`).value.trim();
+        
+        if (!newUserInput || !newPassInput) {
+            alert("اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين!");
+            return;
+        }
+
+        if (newUserInput !== oldUsername) {
+            if (db.users[newUserInput]) {
+                alert("اسم المستخدم الجديد موجود مسبقاً!");
+                return;
+            }
+            db.users[newUserInput] = db.users[oldUsername];
+            delete db.users[oldUsername];
+        }
+        db.users[newUserInput].pass = newPassInput;
+        saveDB();
+        logActivity(`قام المدير بتعديل بيانات المستخدم: ${newUserInput}`);
+        alert("تم تحديث بيانات المستخدم بنجاح!");
+        renderAdminUsersTable();
+    }
+
+    function toggleUserActive(username) {
+        db.users[username].active = !db.users[username].active;
+        saveDB();
+        logActivity(`تغيير حالة تفعيل المستخدم ${username} إلى: ${db.users[username].active}`);
+        renderAdminUsersTable();
+    }
+
+    function deleteUser(username) {
+        if (confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) {
+            delete db.users[username];
+            saveDB();
+            logActivity(`تم حذف المستخدم: ${username}`);
+            renderAdminUsersTable();
+        }
+    }
+
+    function renderGlobalAuditLog() {
+        let logContainer = document.getElementById('globalAuditLog');
+        if (!logContainer) return;
+        logContainer.innerHTML = '';
+        if (!db.logs || db.logs.length === 0) {
+            logContainer.innerHTML = '<div style="color:#64748b; text-align:center;">لا توجد أنشطة مسجلة بعد.</div>';
+            return;
+        }
+        db.logs.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'audit-log-item';
+            div.innerHTML = `<strong>[${item.time}]</strong> المستخدم (<span style="color:var(--secondary);">${item.user}</span>): ${item.desc}`;
+            logContainer.appendChild(div);
         });
     }
 
-    function switchLevel(newLevel) {
-        db.currentLevel = newLevel;
-        if (!db.levels[newLevel]) {
-            initLevel(newLevel);
+    function initLevelData() {
+        if (!db.levels) db.levels = {};
+        if (!db.levels[db.currentLevel]) {
+            db.levels[db.currentLevel] = {
+                students: [],
+                currentSubject: "مادة 1",
+                subjects: {
+                    "مادة 1": { prof: "", assistant: "", program: "برنامج تكنولوجيا الصناعات الخشبية", logoUrl: "https://via.placeholder.com/120x80/2e7d32/ffffff?text=تكنولوجيا+الأخشاب", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
+                }
+            };
         }
-        saveDB();
-        renderSubjectDropdown();
-        loadCurrentSubjectData();
-        renderHeader();
-        renderTable();
     }
 
-    function switchSubject(newSubj) {
-        let lvl = getLevelData();
-        lvl.currentSubject = newSubj;
-        saveDB();
-        loadCurrentSubjectData();
-        renderHeader();
-        renderTable();
+    function populateLevelSelect() {
+        let sel = document.getElementById('levelSelect');
+        if (!sel) return;
+        sel.value = db.currentLevel;
     }
 
-    function loadCurrentSubjectData() {
-        let subj = getSubjectData();
-        document.getElementById('profName').value = subj.prof || '';
-        document.getElementById('assistantName').value = subj.assistant || '';
-        document.getElementById('programName').value = subj.program || '';
-        document.getElementById('termName').value = subj.term || '';
-        document.getElementById('maxGrade').value = subj.maxGrade !== undefined ? subj.maxGrade : 15;
+    function switchLevel(levelName) {
+        db.currentLevel = levelName;
+        initLevelData();
+        populateSubjectSelect();
+        loadCurrentSubjectToUI();
+        renderTable();
+        saveDB();
+        logActivity(`الانتقال إلى الفرقة الدراسية: ${levelName}`);
+    }
+
+    function populateSubjectSelect() {
+        let levelData = db.levels[db.currentLevel];
+        let sel = document.getElementById('subjectSelect');
+        if (!sel) return;
+        sel.innerHTML = '';
+        
+        for (let subName in levelData.subjects) {
+            let opt = document.createElement('option');
+            opt.value = subName;
+            opt.textContent = subName;
+            if (subName === levelData.currentSubject) opt.selected = true;
+            sel.appendChild(opt);
+        }
+    }
+
+    function switchSubject(subName) {
+        let levelData = db.levels[db.currentLevel];
+        levelData.currentSubject = subName;
+        loadCurrentSubjectToUI();
+        renderTable();
+        saveDB();
+        logActivity(`التبديل إلى مادة: ${subName} (${db.currentLevel})`);
+    }
+
+    function loadCurrentSubjectToUI() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        if (!subData) return;
+
+        document.getElementById('profName').value = subData.prof || '';
+        document.getElementById('assistantName').value = subData.assistant || '';
+        document.getElementById('programInput').value = subData.program || '';
+        document.getElementById('termName').value = subData.term || '';
+        document.getElementById('maxGrade').value = subData.maxGrade || 15;
+
+        let facImg = document.getElementById('facultyLogoPreview');
+        if (facImg) facImg.src = subData.logoUrl || "https://via.placeholder.com/120x80/2e7d32/ffffff?text=تكنولوجيا+الأخشاب";
+
+        updateDashboardPreviews();
     }
 
     function updateMeta() {
-        let subj = getSubjectData();
-        subj.prof = document.getElementById('profName').value;
-        subj.assistant = document.getElementById('assistantName').value;
-        subj.program = document.getElementById('programName').value;
-        subj.term = document.getElementById('termName').value;
-        subj.maxGrade = parseFloat(document.getElementById('maxGrade').value) || 15;
-        saveDB();
-    }
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        if (!subData) return;
 
-    function addSingleStudentManual() {
-        let nameInput = document.getElementById('manualStudentName');
-        let seatInput = document.getElementById('manualSeatNo');
-        let statusInput = document.getElementById('manualStudentStatus');
-        
-        let stName = nameInput.value.trim();
-        let seatNo = seatInput.value.trim();
-        let stStatus = statusInput.value.trim() || 'مستجد';
-
-        if (!stName) {
-            alert("يرجى كتابة اسم الطالب أولاً!");
-            return;
-        }
-
-        let lvl = getLevelData();
-        let exists = lvl.students.some(s => s.name === stName);
-        if (exists) {
-            alert("هذا الطالب موجود بالفعل في الكشف!");
-            return;
-        }
-
-        lvl.students.push({
-            id: seatNo || (202600 + lvl.students.length + 1),
-            name: stName,
-            status: stStatus
-        });
+        subData.prof = document.getElementById('profName').value;
+        subData.assistant = document.getElementById('assistantName').value;
+        subData.term = document.getElementById('termName').value;
+        subData.maxGrade = parseFloat(document.getElementById('maxGrade').value) || 15;
 
         saveDB();
-        renderTable();
-
-        nameInput.value = '';
-        seatInput.value = '';
-        nameInput.focus();
+        updateDashboardPreviews();
     }
 
-    function addLecture() {
-        let subj = getSubjectData();
-        subj.lecCount = (subj.lecCount || 1) + 1;
-        saveDB();
-        renderHeader();
-        renderTable();
-    }
+    function updateDashboardPreviews() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        if (!subData) return;
 
-    function removeLastLecture() {
-        let subj = getSubjectData();
-        if (subj.lecCount <= 1) {
-            alert("لا يمكن تقليل المحاضرات عن محاضرة واحدة!");
-            return;
-        }
-        if (confirm(`هل أنت تأكد من حذف العمود الخاص بالمحاضرة رقم (${subj.lecCount})؟`)) {
-            delete subj.dates[subj.lecCount];
-            subj.lecCount--;
-            saveDB();
-            renderHeader();
-            renderTable();
-        }
+        let pProf = document.getElementById('previewProfSummary');
+        let pProg = document.getElementById('previewProgSummary');
+        let pGrade = document.getElementById('previewGradeSummary');
+
+        if (pProf) pProf.innerText = subData.prof ? `أستاذ المادة: ${subData.prof}` : "د/ ...";
+        if (pProg) pProg.innerText = `${subData.program || 'البرنامج'} / ${subData.term || 'الترم'}`;
+        if (pGrade) pGrade.innerText = `الدرجة الكلية للحضور: ${subData.maxGrade}`;
     }
 
     function addNewSubjectPrompt() {
-        let name = prompt("أدخل اسم المادة الجديدة:");
-        if (name && name.trim()) {
-            name = name.trim();
-            let lvl = getLevelData();
-            if (!lvl.subjects[name]) {
-                lvl.subjects[name] = { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} };
-                lvl.currentSubject = name;
-                saveDB();
-                renderSubjectDropdown();
-                loadCurrentSubjectData();
-                renderHeader();
-                renderTable();
-            } else {
-                alert("هذه المادة موجودة بالفعل!");
-            }
+        let subName = prompt("أدخل اسم المادة الجديدة:");
+        if (!subName) return;
+        subName = subName.trim();
+        let levelData = db.levels[db.currentLevel];
+        if (levelData.subjects[subName]) {
+            alert("هذه المادة موجودة مسبقاً في هذه الفرقة!");
+            return;
         }
+
+        levelData.subjects[subName] = {
+            prof: "",
+            assistant: "",
+            program: "برنامج تكنولوجيا الصناعات الخشبية",
+            logoUrl: "https://via.placeholder.com/120x80/2e7d32/ffffff?text=تكنولوجيا+الأخشاب",
+            term: "",
+            maxGrade: 15,
+            lecCount: 1,
+            dates: {},
+            attendance: {}
+        };
+
+        levelData.currentSubject = subName;
+        populateSubjectSelect();
+        loadCurrentSubjectToUI();
+        renderTable();
+        saveDB();
+        logActivity(`إضافة مادة دراسية جديدة: ${subName} في ${db.currentLevel}`);
     }
 
     function deleteCurrentSubjectPrompt() {
-        let lvl = getLevelData();
-        let cur = lvl.currentSubject;
-        if (Object.keys(lvl.subjects).length <= 1) {
-            alert("لا يمكنك حذف المادة الوحيدة المتبقية!");
+        let levelData = db.levels[db.currentLevel];
+        let subsKeys = Object.keys(levelData.subjects);
+        if (subsKeys.length <= 1) {
+            alert("لا يمكن حذف المادة الأخيرة المتاحة في الفرقة!");
             return;
         }
-        if (confirm(`هل أنت تأكد من حذف مادة (${cur}) ببيانات غيابها ودرجاتها؟`)) {
-            delete lvl.subjects[cur];
-            lvl.currentSubject = Object.keys(lvl.subjects)[0];
-            saveDB();
-            renderSubjectDropdown();
-            loadCurrentSubjectData();
-            renderHeader();
+        if (confirm(`هل أنت متأكد من حذف المادة الحالية (${levelData.currentSubject})؟`)) {
+            let deletedSub = levelData.currentSubject;
+            delete levelData.subjects[deletedSub];
+            levelData.currentSubject = Object.keys(levelData.subjects)[0];
+            populateSubjectSelect();
+            loadCurrentSubjectToUI();
             renderTable();
+            saveDB();
+            logActivity(`تم حذف المادة الدراسية: ${deletedSub}`);
         }
     }
 
-    function renderHeader() {
-        let subj = getSubjectData();
-        let count = subj.lecCount || 1;
-
-        document.getElementById('lecturesGroupHeader').colSpan = count;
-        document.getElementById('totalLecturesCnt').innerText = count;
-
-        const row = document.getElementById('lectureHeaderRow');
-        let html = '';
-        for (let i = 1; i <= count; i++) {
-            let dVal = subj.dates[i] || '';
-            html += `
-                <th class="lec-col">
-                    م${i}
-                    <input type="date" class="date-input" value="${dVal}" onchange="updateDate(${i}, this.value)">
-                </th>
-            `;
-        }
-        html += `
-            <th class="stat-col">حضور</th>
-            <th class="stat-col">غياب</th>
-            <th class="stat-col">% الحضور</th>
-            <th class="grade-col" style="background:#b45309;">الدرجة المستحقة</th>
-            <th class="stat-col">% الغياب</th>
-        `;
-        row.innerHTML = html;
-    }
-
-    function updateDate(lecNum, val) {
-        let subj = getSubjectData();
-        subj.dates[lecNum] = val;
+    function addLecture() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        subData.lecCount = (subData.lecCount || 0) + 1;
         saveDB();
+        renderTable();
+        logActivity(`إضافة محاضرة رقم ${subData.lecCount} للمادة ${levelData.currentSubject}`);
+    }
+
+    function removeLastLecture() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        if (subData.lecCount <= 1) {
+            alert("لا يمكن حذف المحاضرة الوحيدة المتبقية!");
+            return;
+        }
+        if (confirm("هل أنت متأكد من حذف آخر محاضرة مسجلة؟")) {
+            delete subData.dates[subData.lecCount];
+            levelData.students.forEach(st => {
+                if (subData.attendance[st.seatNo]) {
+                    delete subData.attendance[st.seatNo][subData.lecCount];
+                }
+            });
+            subData.lecCount--;
+            saveDB();
+            renderTable();
+            logActivity(`حذف آخر محاضرة للمادة ${levelData.currentSubject}`);
+        }
     }
 
     function setFilter(filterType) {
         activeFilter = filterType;
         document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
+        if (filterType === 'warning') document.getElementById('card-warning').classList.add('active-filter');
+        else if (filterType === 'banned') document.getElementById('card-banned').classList.add('active-filter');
+        else document.getElementById('card-all').classList.add('active-filter');
+
         let bar = document.getElementById('filterInfoBar');
-        let txt = document.getElementById('filterInfoText');
-
+        let text = document.getElementById('filterInfoText');
         if (filterType === 'all') {
-            document.getElementById('card-all').classList.add('active-filter');
             bar.style.display = 'none';
-        } else if (filterType === 'warning') {
-            document.getElementById('card-warning').classList.add('active-filter');
+        } else {
             bar.style.display = 'flex';
-            txt.innerText = '🔍 تم تصفية الكشف: الطلاب المستحقين لـ (إنذار غياب ≥ 15%)';
-        } else if (filterType === 'banned') {
-            document.getElementById('card-banned').classList.add('active-filter');
-            bar.style.display = 'flex';
-            txt.innerText = '🚨 تم تصفية الكشف: الطلاب المستحقين لـ (حرمان من الامتحان ≥ 25%)';
+            text.innerText = filterType === 'warning' ? 'عرض الطلاب الحاصلين على إنذار غياب (≥15%)' : 'عرض الطلاب المحرومين بسبب الغياب (≥25%)';
         }
-
         renderTable();
     }
 
-    document.getElementById('excelFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    function addSingleStudentManual() {
+        let seatNo = document.getElementById('manualSeatNo').value.trim();
+        let name = document.getElementById('manualStudentName').value.trim();
+        let status = document.getElementById('manualStudentStatus').value.trim() || 'مستجد';
 
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            const data = new Uint8Array(evt.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+        if (!seatNo || !name) {
+            alert("برجاء إدخال رقم الجلوس واسم الطالب بدقة!");
+            return;
+        }
 
-            let headerRowIndex = -1;
-            let nameColIndex = -1;
-            let seatColIndex = -1;
-            let statusColIndex = -1;
+        let levelData = db.levels[db.currentLevel];
+        if (levelData.students.some(s => s.seatNo === seatNo)) {
+            alert("رقم الجلوس هذا مسجل مسبقاً ضمن طلاب هذه الفرقة!");
+            return;
+        }
 
-            for (let r = 0; r < jsonData.length; r++) {
-                let row = jsonData[r];
-                if (!row) continue;
+        levelData.students.push({ seatNo: seatNo, name: name, status: status });
+        document.getElementById('manualSeatNo').value = '';
+        document.getElementById('manualStudentName').value = '';
+        saveDB();
+        renderTable();
+        logActivity(`إضافة طالب يدوي (${name} - ${seatNo}) إلى ${db.currentLevel}`);
+    }
 
-                for (let c = 0; c < row.length; c++) {
-                    let cellVal = row[c] ? row[c].toString().trim().toLowerCase() : '';
+    function deleteStudent(seatNo) {
+        if (confirm("هل أنت متأكد من حذف هذا الطالب من الكشف؟")) {
+            let levelData = db.levels[db.currentLevel];
+            levelData.students = levelData.students.filter(s => s.seatNo !== seatNo);
+            saveDB();
+            renderTable();
+            logActivity(`حذف الطالب برقم جلوس ${seatNo}`);
+        }
+    }
 
-                    if (cellVal.includes('اسم الطالب') || cellVal === 'الاسم' || cellVal === 'اسم' || cellVal === 'الطالب') {
-                        headerRowIndex = r;
-                        nameColIndex = c;
+    function clearStudentsList() {
+        if (confirm("هل أنت متأكد تماماً من مسح وحذف جميع طلاب هذه الفرقة؟")) {
+            let levelData = db.levels[db.currentLevel];
+            levelData.students = [];
+            saveDB();
+            renderTable();
+            logActivity(`مسح جميع طلاب الفرقة: ${db.currentLevel}`);
+        }
+    }
+
+    function importExcelFile(input) {
+        if (!input.files || !input.files[0]) return;
+        let file = input.files[0];
+        let reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                let data = new Uint8Array(e.target.result);
+                let workbook = XLSX.read(data, { type: 'array' });
+                let firstSheetName = workbook.SheetNames[0];
+                let worksheet = workbook.Sheets[firstSheetName];
+                let json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                let levelData = db.levels[db.currentLevel];
+                let addedCount = 0;
+
+                json.forEach((row, idx) => {
+                    if (idx === 0 && (String(row[0]).includes('اسم') || String(row[1]).includes('اسم'))) return;
+                    if (row.length >= 2) {
+                        let seatNo = String(row[0] || row[1] || '').trim();
+                        let name = String(row[1] || row[0] || '').trim();
+                        let status = String(row[2] || 'مستجد').trim();
+
+                        if (seatNo && name && !levelData.students.some(s => s.seatNo === seatNo)) {
+                            levelData.students.push({ seatNo: seatNo, name: name, status: status });
+                            addedCount++;
+                        }
                     }
-                    if (cellVal.includes('حالة الطالب') || cellVal.includes('الحالة') || cellVal === 'حالة') {
-                        statusColIndex = c;
-                    }
-                    if (cellVal.includes('جلوس') || cellVal.includes('كود') || cellVal.includes('رقم الجلوس') || cellVal === 'م') {
-                        if (cellVal !== 'مسلسل') seatColIndex = c;
-                    }
-                }
-                if (headerRowIndex !== -1) break;
-            }
+                });
 
-            if (headerRowIndex === -1) {
-                headerRowIndex = 0;
-                nameColIndex = 1;
-                seatColIndex = 0;
-                statusColIndex = 2;
-            }
-
-            let importedStudents = [];
-            for (let r = headerRowIndex + 1; r < jsonData.length; r++) {
-                let row = jsonData[r];
-                if (!row || row.length === 0) continue;
-
-                let name = row[nameColIndex] ? row[nameColIndex].toString().trim() : '';
-                let seatNo = (seatColIndex !== -1 && row[seatColIndex]) ? row[seatColIndex].toString().trim() : '';
-                let stStatus = (statusColIndex !== -1 && row[statusColIndex]) ? row[statusColIndex].toString().trim() : 'مستجد';
-
-                if (!name && row[nameColIndex + 1]) {
-                    name = row[nameColIndex + 1].toString().trim();
-                }
-
-                if (name && name !== 'اسم الطالب' && name !== 'الاسم') {
-                    importedStudents.push({
-                        id: seatNo || (202600 + importedStudents.length + 1),
-                        name: name,
-                        status: stStatus || 'مستجد'
-                    });
-                }
-            }
-
-            if (importedStudents.length > 0) {
-                let lvl = getLevelData();
-                lvl.students = importedStudents;
                 saveDB();
                 renderTable();
-                alert(`تم استيراد ${importedStudents.length} طالب بنجاح مع حالاتهم المدونة بملف الإكسيل.`);
-            } else {
-                alert("لم يتم العثور على أسماء طلاب داخل الملف!");
+                logActivity(`استيراد ${addedCount} طالب من ملف إكسل لـ ${db.currentLevel}`);
+                alert(`تم استيراد ${addedCount} طالباً بنجاح إلى ${db.currentLevel}!`);
+            } catch (err) {
+                alert("حدث خطأ أثناء قراءة ملف الإكسل، تأكد من صحة تنسيق الملف.");
             }
         };
         reader.readAsArrayBuffer(file);
-        this.value = '';
-    });
+    }
 
-    function toggleStatus(studentName, lecNum) {
-        let subj = getSubjectData();
-        if (!subj.attendance[studentName]) subj.attendance[studentName] = {};
+    function toggleAttendance(seatNo, lecIdx) {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        if (!subData.attendance[seatNo]) subData.attendance[seatNo] = {};
+        
+        let currentStatus = subData.attendance[seatNo][lecIdx] || 'P';
+        let nextStatus = currentStatus === 'P' ? 'A' : (currentStatus === 'A' ? 'E' : 'P');
+        subData.attendance[seatNo][lecIdx] = nextStatus;
 
-        let current = subj.attendance[studentName][lecNum] || 'ح';
-        let next = 'غ';
-        if (current === 'غ') next = 'ع';
-        else if (current === 'ع') next = 'ح';
-
-        subj.attendance[studentName][lecNum] = next;
         saveDB();
         renderTable();
     }
 
-    function renderTable() {
-        let lvl = getLevelData();
-        let subj = getSubjectData();
-        let count = subj.lecCount || 1;
-        let maxG = subj.maxGrade !== undefined ? parseFloat(subj.maxGrade) : 15;
-        if (isNaN(maxG) || maxG <= 0) maxG = 15;
+    function updateLectureDate(lecIdx, val) {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        subData.dates[lecIdx] = val;
+        saveDB();
+    }
 
-        const tbody = document.getElementById('studentsTbody');
+    function manualSave() {
+        saveDB();
+        logActivity("حفظ يدوي لبيانات المنظومة والتعديلات");
+        alert("تم حفظ جميع التعديلات والبيانات بنجاح في ذاكرة المتصفح!");
+    }
+
+    function renderTable() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        let lecCount = subData.lecCount || 1;
+
+        let lectureHeaderRow = document.getElementById('lectureHeaderRow');
+        let lecturesGroupHeader = document.getElementById('lecturesGroupHeader');
+        lecturesGroupHeader.colSpan = lecCount;
+
+        let lecHeaderHtml = '';
+        for (let i = 1; i <= lecCount; i++) {
+            let savedDate = subData.dates[i] || '';
+            lecHeaderHtml += `
+                <th class="lec-col">
+                    محاضرة ${i}
+                    <input type="date" class="date-input" value="${savedDate}" onchange="updateLectureDate(${i}, this.value)">
+                </th>
+            `;
+        }
+        lectureHeaderRow.innerHTML = lecHeaderHtml;
+
+        let tbody = document.getElementById('studentsTbody');
         tbody.innerHTML = '';
 
-        let warning = 0, banned = 0;
-        let displayRowIdx = 1;
+        let totalStudents = levelData.students.length;
+        let warningCount = 0;
+        let bannedCount = 0;
 
-        lvl.students.forEach((st, idx) => {
-            if (!subj.attendance[st.name]) subj.attendance[st.name] = {};
+        let filteredStudents = levelData.students.filter(st => {
+            let seat = st.seatNo;
+            let absentCount = 0;
+            for (let i = 1; i <= lecCount; i++) {
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
+                if (stAtt === 'A') absentCount++;
+            }
+            let absentRatio = lecCount > 0 ? (absentCount / lecCount) : 0;
+            
+            let isWarn = absentRatio >= 0.15 && absentRatio < 0.25;
+            let isBan = absentRatio >= 0.25;
 
-            let present = 0, absent = 0, excused = 0;
+            if (isWarn) warningCount++;
+            if (isBan) bannedCount++;
 
-            for (let i = 1; i <= count; i++) {
-                let status = subj.attendance[st.name][i] || 'ح';
-                if (status === 'ح') present++;
-                else if (status === 'غ') absent++;
-                else if (status === 'ع') excused++;
+            if (activeFilter === 'warning') return isWarn;
+            if (activeFilter === 'banned') return isBan;
+            return true;
+        });
+
+        document.getElementById('totalStudentsCnt').innerText = totalStudents;
+        document.getElementById('totalLecturesCnt').innerText = lecCount;
+        document.getElementById('warningCnt').innerText = warningCount;
+        document.getElementById('bannedCnt').innerText = bannedCount;
+
+        if (filteredStudents.length === 0) {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="${8 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد بيانات طلاب مطابقة للعرض حالياً.</td>`;
+            tbody.appendChild(tr);
+            return;
+        }
+
+        filteredStudents.forEach((st, idx) => {
+            let seat = st.seatNo;
+            let presentCount = 0;
+            let absentCount = 0;
+            let excuseCount = 0;
+
+            for (let i = 1; i <= lecCount; i++) {
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
+                if (stAtt === 'P') presentCount++;
+                else if (stAtt === 'A') absentCount++;
+                else if (stAtt === 'E') excuseCount++;
             }
 
-            let absRatio = (absent / count);
-            let attPercent = ((present / count) * 100).toFixed(1) + '%';
-            let absPercent = (absRatio * 100).toFixed(1) + '%';
+            let absentRatio = lecCount > 0 ? (absentCount / lecCount) : 0;
+            let gradePerLec = subData.maxGrade / lecCount;
+            let studentGrade = Math.max(0, subData.maxGrade - (absentCount * gradePerLec));
+            studentGrade = Math.round(studentGrade * 100) / 100;
 
-            let calculatedGrade = ((present / count) * maxG).toFixed(2);
-            if (calculatedGrade.endsWith('.00')) calculatedGrade = parseInt(calculatedGrade);
-
-            let filterCat = 'regular';
-            let alertBadge = '<span class="badge badge-ok">منتظم</span>';
-
-            if (absRatio >= 0.25) {
-                banned++;
-                filterCat = 'banned';
-                alertBadge = '<span class="badge badge-danger">🚨 حرمان</span>';
-            } else if (absRatio >= 0.15) {
-                warning++;
-                filterCat = 'warning';
-                alertBadge = '<span class="badge badge-warning">⚠️ إنذار</span>';
-            }
-
-            if (activeFilter !== 'all' && activeFilter !== filterCat) {
-                return;
+            let badgeHtml = `<span class="badge badge-ok">منتظم</span>`;
+            if (absentRatio >= 0.25) {
+                badgeHtml = `<span class="badge badge-danger">حرمان (≥25%)</span>`;
+            } else if (absentRatio >= 0.15) {
+                badgeHtml = `<span class="badge badge-warning">إنذار غياب (≥15%)</span>`;
             }
 
             let tr = document.createElement('tr');
-            let studentStatusText = st.status || 'مستجد';
-
             let rowHtml = `
-                <td>${displayRowIdx++}</td>
-                <td>${st.id}</td>
-                <td style="text-align: right; font-weight: bold;">${st.name}</td>
-                <td><span class="badge badge-info">${studentStatusText}</span></td>
+                <td>${idx + 1}</td>
+                <td><strong>${seat}</strong></td>
+                <td style="text-align:right; font-weight:bold;">${st.name}</td>
+                <td><span class="badge badge-info">${st.status || 'مستجد'}</span></td>
             `;
 
-            for (let i = 1; i <= count; i++) {
-                let status = subj.attendance[st.name][i] || 'ح';
-                let cssClass = status === 'ح' ? 'st-p' : (status === 'غ' ? 'st-a' : 'st-e');
-                rowHtml += `<td><div class="status-cell ${cssClass}" onclick="toggleStatus('${st.name}', ${i})">${status}</div></td>`;
+            for (let i = 1; i <= lecCount; i++) {
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
+                let cls = stAtt === 'P' ? 'st-p' : (stAtt === 'A' ? 'st-a' : 'st-e');
+                let txt = stAtt === 'P' ? 'حاضر' : (stAtt === 'A' ? 'غائب' : 'عذر');
+                rowHtml += `<td><span class="status-cell ${cls}" onclick="toggleAttendance('${seat}', ${i})" title="اضغط لتبديل حالة الحضور">${txt}</span></td>`;
             }
 
             rowHtml += `
-                <td><strong style="color:#065f46;">${present}</strong></td>
-                <td><strong style="color:#991b1b;">${absent}</strong></td>
-                <td><strong>${attPercent}</strong></td>
-                <td><span class="grade-badge">${calculatedGrade}</span></td>
-                <td><strong>${absPercent}</strong></td>
-                <td>${alertBadge}</td>
-                <td><button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="deleteStudent(${idx})">حذف</button></td>
+                <td style="background:#f0fdf4; font-weight:bold; color:#065f46;">${presentCount}</td>
+                <td style="background:#fef2f2; font-weight:bold; color:#991b1b;">${absentCount}</td>
+                <td style="background:#fffbeb; font-weight:bold; color:#92400e;">${excuseCount}</td>
+                <td style="background:#f0fdf4; font-weight:bold; color:#065f46;">${(absentRatio * 100).toFixed(1)}%</td>
+                <td><span class="grade-badge">${studentGrade} / ${subData.maxGrade}</span></td>
+                <td>${badgeHtml}</td>
+                <td><button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="deleteStudent('${seat}')">حذف</button></td>
             `;
 
             tr.innerHTML = rowHtml;
             tbody.appendChild(tr);
         });
-
-        document.getElementById('totalStudentsCnt').innerText = lvl.students.length;
-        document.getElementById('warningCnt').innerText = warning;
-        document.getElementById('bannedCnt').innerText = banned;
     }
 
-    function deleteStudent(idx) {
-        let lvl = getLevelData();
-        if (confirm(`هل أنت تأكد من حذف الطالب (${lvl.students[idx].name}) من هذه الفرقة؟`)) {
-            lvl.students.splice(idx, 1);
-            saveDB();
-            renderTable();
-        }
-    }
-
-    function clearStudentsList() {
-        let lvl = getLevelData();
-        if (confirm(`⚠️ هل تريد مسح أسماء الطلاب بالكامل لـ (${db.currentLevel})؟`)) {
-            lvl.students = [];
-            saveDB();
-            renderTable();
-        }
-    }
-
-    function manualSave() {
-        saveDB();
-        alert("تم حفظ جميع التعديلات بنجاح!");
-    }
-
-    function getBase64Image(imgId) {
-        const img = document.getElementById(imgId);
-        if (!img || img.style.display === 'none' || !img.src) return null;
-        
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL("image/png");
-        return dataURL.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
-    }
-
-    function getColLetter(colIndex) {
-        let temp, letter = '';
-        while (colIndex > 0) {
-            temp = (colIndex - 1) % 26;
-            letter = String.fromCharCode(65 + temp) + letter;
-            colIndex = (colIndex - temp - 1) / 26;
-        }
-        return letter;
-    }
-
-    async function exportExcelWithStyles() {
-        let lvl = getLevelData();
-        let subj = getSubjectData();
-        let count = subj.lecCount || 1;
-        let maxG = subj.maxGrade !== undefined ? parseFloat(subj.maxGrade) : 15;
-
-        if (lvl.students.length === 0) {
-            alert("لا توجد أسماء طلاب للتصدير!");
-            return;
-        }
+    // تصدير إكسل الشامل المدعوم بالمعادلات والألوان التلقائية التفاعلية
+    async function exportComprehensiveExcelWithColors() {
+        let levelData = db.levels[db.currentLevel];
+        let subData = levelData.subjects[levelData.currentSubject];
+        let lecCount = subData.lecCount || 1;
 
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('سجل متابعة الحضور والدرجات', { views: [{ rtl: true }] });
+        workbook.views = [{ RTL: true }];
+        const sheet = workbook.addWorksheet('سجل الحضور والدرجات');
 
-        const univLogoBase64 = getBase64Image('univLogoPreview');
-        const facultyLogoBase64 = getBase64Image('facultyLogoPreview');
+        sheet.addRow([`جامعة طيبة التكنولوجية - ${db.facultyNameCustom}`]);
+        sheet.addRow([`سجل متابعة الحضور والغياب والدرجات - ${db.currentLevel} - المادة: ${levelData.currentSubject}`]);
+        sheet.addRow([`أستاذ المادة: ${subData.prof || 'غير محدد'} | البرنامج: ${subData.program || 'غير محدد'} | الترم: ${subData.term || 'غير محدد'}`]);
+        sheet.addRow([]);
 
-        if (univLogoBase64) {
-            const univImageId = workbook.addImage({
-                base64: univLogoBase64,
-                extension: 'png',
-            });
-            worksheet.addImage(univImageId, {
-                tl: { col: 0, row: 0 },
-                ext: { width: 80, height: 80 }
-            });
+        let headerRow = ["مسلسل", "رقم الجلوس", "اسم الطالب", "حالة الطالب"];
+        for (let i = 1; i <= lecCount; i++) {
+            let dStr = subData.dates[i] ? ` (${subData.dates[i]})` : '';
+            headerRow.push(`محاضرة ${i}${dStr}`);
         }
+        headerRow.push("إجمالي الحضور", "إجمالي الغياب", "إجمالي الأعذار", "نسبة الغياب %", `درجة الحضور (${subData.maxGrade})`, "حالة التنبيه");
+        
+        let addedHeaderRow = sheet.addRow(headerRow);
+        addedHeaderRow.font = { name: 'Cairo', bold: true, color: { argb: 'FFFFFFFF' } };
+        addedHeaderRow.alignment = { vertical: 'middle', horizontal: 'center' };
+        
+        addedHeaderRow.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '003366' } };
+            cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        });
 
-        if (facultyLogoBase64) {
-            const facultyImageId = workbook.addImage({
-                base64: facultyLogoBase64,
-                extension: 'png',
-            });
-            const totalCols = 4 + count + 6;
-            worksheet.addImage(facultyImageId, {
-                tl: { col: totalCols - 1, row: 0 },
-                ext: { width: 80, height: 80 }
-            });
-        }
+        // دوائر ومعادلات إكسل الحية لكل صف طالباً
+        levelData.students.forEach((st, idx) => {
+            let seat = st.seatNo;
+            let rowNum = sheet.rowCount + 1;
+            let rowData = [idx + 1, seat, st.name, st.status || 'مستجد'];
 
-        worksheet.addRow([]);
-        worksheet.addRow([]);
-        worksheet.addRow([]);
-        worksheet.addRow([]);
+            let rowAttStatuses = [];
+            for (let i = 1; i <= lecCount; i++) {
+                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'P';
+                rowData.push(stAtt);
+                rowAttStatuses.push(stAtt);
+            }
 
-        let headerOrgRow = worksheet.addRow(['جامعة طيبة التكنولوجية - كلية تكنولوجيا الصناعة والطاقة']);
-        headerOrgRow.font = { bold: true, size: 13, color: { argb: '0284C7' } };
-        headerOrgRow.alignment = { horizontal: 'center' };
+            // تحديد نطاق أعمدة المحاضرات لهذا الصف في الإكسل
+            let startColLet = 'E';
+            let endColLet = String.fromCharCode(64 + 4 + lecCount);
 
-        let headerTitleRow = worksheet.addRow(['سجل متابعة الحضور والغياب والدرجات']);
-        headerTitleRow.font = { bold: true, size: 16, color: { argb: '1E293B' } };
-        headerTitleRow.alignment = { horizontal: 'center' };
+            let presentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "P")`;
+            let absentFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "A")`;
+            let excuseFormula = `COUNTIF(${startColLet}${rowNum}:${endColLet}${rowNum}, "E")`;
+            
+            // نسبة الغياب = (إجمالي الغياب / عدد المحاضرات)
+            let ratioFormula = `(${absentFormula}/${lecCount})`;
+            
+            // الدرجة النهائية = الدرجة الكلية - (إجمالي الغياب * (الدرجة الكلية / عدد المحاضرات))
+            let gradeFormula = `MAX(0, ${subData.maxGrade} - (${absentFormula} * (${subData.maxGrade}/${lecCount})))`;
 
-        worksheet.addRow(['📍 الفرقة الدراسية:', db.currentLevel, '', '📘 اسم المادة:', lvl.currentSubject]);
-        worksheet.addRow(['👨‍🏫 أستاذ المادة (الدكتور):', subj.prof || '-', '', '🛠️ المعيد / الهيئة المعاونة:', subj.assistant || '-']);
-        worksheet.addRow(['🎓 البرنامج / التخصص:', subj.program || '-', '', '📅 الترم / السنة الدراسية:', subj.term || '-']);
-        worksheet.addRow(['🎯 إجمالي درجة الحضور:', maxG]);
-        worksheet.addRow([]);
+            rowData.push({ formula: presentFormula }, { formula: absentFormula }, { formula: excuseFormula }, { formula: ratioFormula }, { formula: gradeFormula });
+            
+            // عمود التنبيه الإداري
+            let absentCountVal = 0;
+            for (let i = 1; i <= lecCount; i++) {
+                if (rowAttStatuses[i-1] === 'A') absentCountVal++;
+            }
+            let absentRatioVal = lecCount > 0 ? (absentCountVal / lecCount) : 0;
+            let alertStatusTxt = "منتظم";
+            if (absentRatioVal >= 0.25) alertStatusTxt = "حرمان غياب";
+            else if (absentRatioVal >= 0.15) alertStatusTxt = "إنذار غياب";
+            rowData.push(alertStatusTxt);
 
-        for (let r = 7; r <= 10; r++) {
-            let row = worksheet.getRow(r);
-            row.eachCell((cell, colNumber) => {
-                if (colNumber % 3 !== 0) {
-                    cell.font = { bold: true, size: 11 };
+            let r = sheet.addRow(rowData);
+            r.alignment = { vertical: 'middle', horizontal: 'center' };
+            r.font = { name: 'Cairo', size: 10 };
+
+            // تلوين وتنسيق خلايا الحضور والغياب ديناميكياً بناءً على القيم الحرفية P و A و E
+            for (let i = 1; i <= lecCount; i++) {
+                let cell = r.getCell(4 + i);
+                let stVal = rowAttStatuses[i - 1];
+                cell.border = { top: {style:'thin', color:{argb:'FFCBD5E1'}}, left: {style:'thin', color:{argb:'FFCBD5E1'}}, bottom: {style:'thin', color:{argb:'FFCBD5E1'}}, right: {style:'thin', color:{argb:'FFCBD5E1'}} };
+                
+                if (stVal === 'P') {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+                    cell.font = { color: { argb: 'FF065F46' }, bold: true };
+                } else if (stVal === 'A') {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+                    cell.font = { color: { argb: 'FF991B1B' }, bold: true };
+                } else {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+                    cell.font = { color: { argb: 'FF92400E' }, bold: true };
                 }
-            });
-        }
+            }
 
-        let row1Data = ['مسلسل', 'رقم الجلوس', 'اسم الطالب', 'حالة الطالب'];
-        for (let i = 1; i <= count; i++) {
-            row1Data.push(`م${i}`);
-        }
-        row1Data.push('حضور', 'غياب', '% الحضور', 'الدرجة المستحقة', '% الغياب', 'حالة الغياب / التنبيه');
+            // تنسيق أعمدة الحسابات والنسبة والدرجات
+            for (let c = 5 + lecCount; c <= rowData.length; c++) {
+                let cell = r.getCell(c);
+                cell.border = { top: {style:'thin', color:{argb:'FFCBD5E1'}}, left: {style:'thin', color:{argb:'FFCBD5E1'}}, bottom: {style:'thin', color:{argb:'FFCBD5E1'}}, right: {style:'thin', color:{argb:'FFCBD5E1'}} };
+            }
 
-        let headerRow1 = worksheet.addRow(row1Data);
-
-        let row2Data = ['', '', '', ''];
-        for (let i = 1; i <= count; i++) {
-            let formattedDate = formatDateFormatted(subj.dates[i]);
-            row2Data.push(formattedDate ? `ت: ${formattedDate}` : '');
-        }
-        let headerRow2 = worksheet.addRow(row2Data);
-
-        headerRow1.eachCell((cell, colNumber) => {
-            cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-
-            if (colNumber <= 4) {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E293B' } };
-            } else if (colNumber <= 4 + count) {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '334155' } };
-            } else if (colNumber === 4 + count + 4) {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B45309' } };
-            } else if (colNumber === 4 + count + 6) {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'BE123C' } };
+            // تلوين خانة التنبيه النهائي بناءً على النسبة
+            let alertCell = r.getCell(rowData.length);
+            if (absentRatioVal >= 0.25) {
+                alertCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+                alertCell.font = { color: { argb: 'FF991B1B' }, bold: true };
+            } else if (absentRatioVal >= 0.15) {
+                alertCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+                alertCell.font = { color: { argb: 'FF92400E' }, bold: true };
             } else {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0D9488' } };
+                alertCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+                alertCell.font = { color: { argb: 'FF065F46' }, bold: true };
             }
         });
 
-        headerRow2.eachCell((cell) => {
-            cell.font = { size: 9, italic: true, color: { argb: 'FFFFFF' } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '475569' } };
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-        });
-
-        const startLecCol = 5;
-        const endLecCol = 4 + count;
-        const startLecLetter = getColLetter(startLecCol);
-        const endLecLetter = getColLetter(endLecCol);
-
-        const presentColLetter = getColLetter(endLecCol + 1);
-        const absentColLetter = getColLetter(endLecCol + 2);
-        const attPercentColLetter = getColLetter(endLecCol + 3);
-        const gradeColLetter = getColLetter(endLecCol + 4);
-        const absPercentColLetter = getColLetter(endLecCol + 5);
-
-        let firstDataRowNumber = 14;
-
-        lvl.students.forEach((st, idx) => {
-            let rowVals = [idx + 1, st.id, st.name, st.status || 'مستجد'];
-
-            for (let i = 1; i <= count; i++) {
-                let stVal = (subj.attendance[st.name] && subj.attendance[st.name][i]) ? subj.attendance[st.name][i] : 'ح';
-                rowVals.push(stVal);
-            }
-
-            rowVals.push(0, 0, 0, 0, 0, '');
-
-            let addedRow = worksheet.addRow(rowVals);
-            let rowNum = addedRow.number;
-
-            addedRow.getCell(endLecCol + 1).value = { formula: `COUNTIF(${startLecLetter}${rowNum}:${endLecLetter}${rowNum}, "ح")` };
-            addedRow.getCell(endLecCol + 2).value = { formula: `COUNTIF(${startLecLetter}${rowNum}:${endLecLetter}${rowNum}, "غ")` };
-            addedRow.getCell(endLecCol + 3).value = { formula: `${presentColLetter}${rowNum}/${count}` };
-            addedRow.getCell(endLecCol + 3).numFmt = '0.0%';
-
-            addedRow.getCell(endLecCol + 4).value = { formula: `ROUND((${presentColLetter}${rowNum}/${count})*B10, 2)` };
-
-            addedRow.getCell(endLecCol + 5).value = { formula: `${absentColLetter}${rowNum}/${count}` };
-            addedRow.getCell(endLecCol + 5).numFmt = '0.0%';
-
-            addedRow.getCell(endLecCol + 6).value = { 
-                formula: `IF(${absPercentColLetter}${rowNum}>=0.25, "حرمان", IF(${absPercentColLetter}${rowNum}>=0.15, "إنذار", "منتظم"))` 
-            };
-
-            addedRow.eachCell((cell, colNumber) => {
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.border = { 
-                    top: { style: 'thin', color: { argb: 'CBD5E1' } }, 
-                    left: { style: 'thin', color: { argb: 'CBD5E1' } }, 
-                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } }, 
-                    right: { style: 'thin', color: { argb: 'CBD5E1' } } 
-                };
-
-                if (colNumber === 3) cell.alignment = { vertical: 'middle', horizontal: 'right' };
-
-                if (colNumber === endLecCol + 4) {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF3C7' } };
-                    cell.font = { bold: true, color: { argb: '92400E' } };
-                }
-
-                if (colNumber === endLecCol + 6) {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E0F2FE' } };
-                    cell.font = { bold: true, color: { argb: '0369A1' } };
+        sheet.columns.forEach(column => {
+            let maxLength = 12;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+                if (cell.value) {
+                    let valStr = typeof cell.value === 'object' && cell.value.formula ? cell.value.formula : cell.value.toString();
+                    let len = valStr.length;
+                    if (len > maxLength) maxLength = len;
                 }
             });
+            column.width = maxLength + 5;
         });
-
-        let lastDataRowNumber = firstDataRowNumber + lvl.students.length - 1;
-        let rangeRef = `${startLecLetter}${firstDataRowNumber}:${endLecLetter}${lastDataRowNumber}`;
-
-        worksheet.addConditionalFormatting({
-            ref: rangeRef,
-            rules: [
-                {
-                    type: 'cellIs',
-                    operator: 'equal',
-                    formulae: ['"ح"'],
-                    style: {
-                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'D1FAE5' } },
-                        font: { color: { argb: '065F46' }, bold: true }
-                    }
-                },
-                {
-                    type: 'cellIs',
-                    operator: 'equal',
-                    formulae: ['"غ"'],
-                    style: {
-                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FEE2E2' } },
-                        font: { color: { argb: '991B1B' }, bold: true }
-                    }
-                },
-                {
-                    type: 'cellIs',
-                    operator: 'equal',
-                    formulae: ['"ع"'],
-                    style: {
-                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FEF3C7' } },
-                        font: { color: { argb: '92400E' }, bold: true }
-                    }
-                }
-            ]
-        });
-
-        worksheet.columns.forEach(column => { column.width = 14; });
-        worksheet.getColumn(3).width = 28;
-        worksheet.getColumn(endLecCol + 6).width = 20;
 
         const buffer = await workbook.xlsx.writeBuffer();
-        saveAs(new Blob([buffer]), `سجل_${db.currentLevel}_${lvl.currentSubject}.xlsx`);
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `سجل_${db.currentLevel}_${levelData.currentSubject}_معادلات_وألوان.xlsx`);
+        logActivity(`تصدير ملف إكسل متقدم بالمعادلات والألوان الحية للمادة ${levelData.currentSubject}`);
     }
 
-    function uploadLogo(input, previewId) {
-        if (input.files && input.files[0]) {
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let img = document.getElementById(previewId);
-                img.src = e.target.result;
-                img.style.display = 'block';
-
-                let label = input.parentElement.querySelector('.logo-label');
-                if (label) label.style.display = 'none';
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    window.onload = loadDB;
+    window.onload = function() {
+        loadDB();
+    };
 </script>
 </body>
 </html>

@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل متابعة الحضور والغياب والدرجات - جامعة طيبة التكنولوجية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #2563eb;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px dashed #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .logo-box {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .logo-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        .logo-label {
+            position: absolute;
+            font-size: 11px;
+            color: #475569;
+            text-align: center;
+            cursor: pointer;
+            width: 100%; 
+            height: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            z-index: 3;
+        }
+
+        .header-title h2 { margin: 0; font-size: 16px; color: #0284c7; text-align: center; font-weight: bold; }
+        .header-title h1 { margin: 4px 0; font-size: 22px; color: var(--primary); text-align: center; }
+        .header-title h3 { margin: 0; font-size: 14px; color: #64748b; text-align: center; font-weight: normal; }
+
+        .subject-bar {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-group { display: flex; align-items: center; gap: 10px; }
+        .nav-group label { font-weight: bold; font-size: 13px; color: var(--primary); }
+
+        select.select-custom {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-weight: bold;
+            font-size: 13px;
+            background-color: #fff;
+            color: var(--primary);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 11px; font-weight: bold; color: #475569; }
+        .input-group input { padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        
+        .grade-input-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 5px 8px;
+            border-radius: 8px;
+        }
+        .grade-input-box label { color: #b45309; }
+        .grade-input-box input { border-color: #f59e0b; font-weight: bold; color: #b45309; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border-top: 4px solid var(--secondary);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            user-select: none;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .stat-card.active-filter { background: #eff6ff; border-color: var(--secondary); }
+        .stat-card.warning { border-top-color: var(--warning); }
+        .stat-card.danger { border-top-color: var(--danger); }
+        .stat-card h2 { margin: 0; font-size: 22px; color: var(--primary); }
+        .stat-card p { margin: 3px 0 0 0; font-size: 11px; color: #64748b; font-weight: bold; }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-student-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .add-student-box input {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .bottom-actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-success { background: var(--accent); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-export { background: #8b5cf6; color: white; }
+        .btn-print { background: #0f766e; color: white; }
+        .btn-clear { background: #f97316; color: white; }
+        .btn-add-lec { background: #0284c7; color: white; }
+
+        .file-upload-btn {
+            background: #475569;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            direction: ltr;
+            max-height: 500px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            white-space: nowrap;
+            direction: rtl;
+        }
+
+        th, td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; }
+        th { background: var(--primary); color: white; position: sticky; top: 0; z-index: 2; }
+        th.lec-col { background: #334155; min-width: 85px; }
+        th.stat-col { background: #0d9488; }
+        th.grade-col { background: #b45309; }
+        th.alert-col { background: #be123c; }
+        tr:nth-child(even) { background: #f8fafc; }
+
+        .date-input {
+            width: 80px; font-size: 9px; padding: 2px; margin-top: 3px;
+            display: block; margin-left: auto; margin-right: auto;
+            border: 1px solid #cbd5e1; border-radius: 4px; text-align: center;
+        }
+
+        .status-cell {
+            cursor: pointer; user-select: none; font-weight: bold;
+            border-radius: 4px; padding: 4px; font-size: 12px;
+        }
+        .st-p { background: #d1fae5; color: #065f46; }
+        .st-a { background: #fee2e2; color: #991b1b; }
+        .st-e { background: #fef3c7; color: #92400e; }
+
+        .badge { padding: 3px 8px; border-radius: 10px; font-weight: bold; font-size: 11px; display: inline-block; }
+        .badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .grade-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #f59e0b;
+            font-size: 12px;
+        }
+
+        .filter-info-bar {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #0369a1;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border-radius: 0; width: 100%; max-width: 100%; padding: 0; }
+            .controls-bar, .logo-label, .btn-danger, th:last-child, td:last-child, .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .footer-section {
+                display: none !important;
+            }
+            .table-container { max-height: none; overflow: visible; border: none; direction: rtl; }
+            table { font-size: 10px; width: 100%; border: 1px solid #000; direction: rtl; }
+            th, td { border: 1px solid #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div class="logo-box">
+            <img id="univLogoPreview" style="display:none;">
+            <label class="logo-label" for="univLogoInput">شعار الجامعة</label>
+            <input type="file" id="univLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'univLogoPreview')">
+        </div>
+
+        <div class="header-title">
+            <h2>جامعة طيبة التكنولوجية - كلية تكنولوجيا الصناعة والطاقة</h2>
+            <h1 id="appMainHeader">سجل متابعة الحضور والغياب والدرجات</h1>
+            <h3>نظام إدارة المقررات والفرق الدراسية التفاعلي</h3>
+        </div>
+
+        <div class="logo-box">
+            <img id="facultyLogoPreview" style="display:none;">
+            <label class="logo-label" for="facultyLogoInput">شعار الكلية</label>
+            <input type="file" id="facultyLogoInput" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'facultyLogoPreview')">
+        </div>
+    </div>
+
+    <div class="subject-bar">
+        <div class="nav-group">
+            <label>📍 الفرقة الدراسية:</label>
+            <select id="levelSelect" class="select-custom" onchange="switchLevel(this.value)">
+                <option value="الفرقة الأولى">الفرقة الأولى</option>
+                <option value="الفرقة الثانية">الفرقة الثانية</option>
+                <option value="الفرقة الثالثة">الفرقة الثالثة</option>
+                <option value="الفرقة الرابعة">الفرقة الرابعة</option>
+            </select>
+        </div>
+
+        <div class="nav-group">
+            <label>📘 المادة:</label>
+            <select id="subjectSelect" class="select-custom" onchange="switchSubject(this.value)"></select>
+        </div>
+
+        <div class="nav-group">
+            <button class="btn btn-primary" onclick="addNewSubjectPrompt()">➕ إضافة مادة جديدة</button>
+            <button class="btn btn-danger" onclick="deleteCurrentSubjectPrompt()">🗑️ حذف المادة الحالية</button>
+        </div>
+    </div>
+
+    <div class="meta-grid">
+        <div class="input-group">
+            <label>أستاذ المادة (الدكتور):</label>
+            <input type="text" id="profName" placeholder="د/ ..." oninput="updateMeta()">
+        </div>
+        <div class="input-group">
+            <label>المعيد / الهيئة المعاونة:</label>
+            <input type="text" id="assistantName" placeholder="م/ ..." oninput="updateMeta()">
+        </div>
+        <div class="input-group">
+            <label>البرنامج / التخصص:</label>
+            <input type="text" id="programName" placeholder="التخصص..." oninput="updateMeta()">
+        </div>
+        <div class="input-group">
+            <label>السنة الدراسية / الترم:</label>
+            <input type="text" id="termName" placeholder="الترم..." oninput="updateMeta()">
+        </div>
+        <div class="input-group grade-input-box">
+            <label>🎯 إجمالي درجة الحضور للمادة:</label>
+            <input type="number" id="maxGrade" value="15" min="1" step="0.5" oninput="updateMeta(); renderTable();" placeholder="مثال: 15 أو 20">
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" id="card-all" onclick="setFilter('all')">
+            <h2 id="totalStudentsCnt">0</h2><p>كل طلاب الفرقة</p>
+        </div>
+        <div class="stat-card" id="card-lectures" style="cursor:default; border-top-color: #64748b;">
+            <h2 id="totalLecturesCnt">1</h2><p>المحاضرات المضافة</p>
+        </div>
+        <div class="stat-card warning" id="card-warning" onclick="setFilter('warning')">
+            <h2 id="warningCnt">0</h2><p>إنذار غياب (≥15%)</p>
+        </div>
+        <div class="stat-card danger" id="card-banned" onclick="setFilter('banned')">
+            <h2 id="bannedCnt">0</h2><p>حرمان غياب (≥25%)</p>
+        </div>
+    </div>
+
+    <div id="filterInfoBar" class="filter-info-bar" style="display:none;">
+        <span id="filterInfoText">تصفية المعروض</span>
+        <button class="btn btn-primary" style="padding:2px 8px; font-size:10px;" onclick="setFilter('all')">عرض الكل</button>
+    </div>
+
+    <div class="controls-bar">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <label class="file-upload-btn" for="excelFile">📂 استيراد من إكسل</label>
+            <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="display:none;">
+            
+            <button class="btn btn-add-lec" onclick="addLecture()">➕ إضافة محاضرة جديدة</button>
+            <button class="btn btn-danger btn-del-lec" onclick="removeLastLecture()">➖ حذف آخر محاضرة</button>
+        </div>
+    </div>
+
+    <div class="add-student-box">
+        <strong style="color: #166534; font-size: 13px;">👤 إضافة طالب يدوي:</strong>
+        <input type="text" id="manualSeatNo" placeholder="رقم الجلوس" style="width: 110px;">
+        <input type="text" id="manualStudentName" placeholder="اسم الطالب بالكامل..." style="width: 230px;">
+        <input type="text" id="manualStudentStatus" placeholder="حالة الطالب (مثلاً: مستجد / باقي)" value="مستجد" style="width: 160px;">
+        <button class="btn btn-success" onclick="addSingleStudentManual()">➕ إضافة للكشف</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr id="topHeaderRow">
+                    <th rowspan="2">مسلسل</th>
+                    <th rowspan="2">رقم الجلوس</th>
+                    <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
+                    <th rowspan="2">حالة الطالب</th>
+                    <th id="lecturesGroupHeader" colspan="1" style="background: #0f172a;">سجل المحاضرات المضافة</th>
+                    <th colspan="5" class="stat-col">التقرير النهائي والدرجات</th>
+                    <th rowspan="2" class="alert-col">حالة الغياب / التنبيه</th>
+                    <th rowspan="2">حذف</th>
+                </tr>
+                <tr id="lectureHeaderRow"></tr>
+            </thead>
+            <tbody id="studentsTbody"></tbody>
+        </table>
+    </div>
+
+    <div class="bottom-actions-bar">
+        <button class="btn btn-success" onclick="manualSave()">💾 حفظ التعديلات</button>
+        <button class="btn btn-clear" onclick="clearStudentsList()">🧹 مسح جميع الطلاب</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+        <button class="btn btn-export" onclick="exportExcelWithStyles()">📥 تصدير ملف إكسل</button>
+    </div>
+
+    <div class="footer-section" style="margin-top: 40px; padding: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 13px;">
+        <div style="margin-bottom: 5px;">
+            &copy; 2026 جميع الحقوق محفوظة | جامعة طيبة التكنولوجية
+        </div>
+        <div style="font-weight: bold; color: #1e293b;">
+            تطوير د. محمد ربيع محمد | العام الأكاديمي 2026-2027
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeFilter = 'all';
+
+    let db = {
+        currentLevel: "الفرقة الأولى",
+        levels: {
+            "الفرقة الأولى": {
+                students: [],
+                currentSubject: "مادة 1",
+                subjects: {
+                    "مادة 1": { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
+                }
+            }
+        }
+    };
+
+    function formatDateFormatted(dateStr) {
+        if (!dateStr) return '';
+        let parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    function loadDB() {
+        const saved = localStorage.getItem('academic_multi_subject_system_v9');
+        if (saved) {
+            try { db = JSON.parse(saved); } catch(e){}
+        }
+
+        if (!db.levels[db.currentLevel]) {
+            initLevel(db.currentLevel);
+        }
+
+        document.getElementById('levelSelect').value = db.currentLevel;
+        renderSubjectDropdown();
+        loadCurrentSubjectData();
+        renderHeader();
+        renderTable();
+    }
+
+    function initLevel(levelName) {
+        db.levels[levelName] = {
+            students: [],
+            currentSubject: "مادة 1",
+            subjects: {
+                "مادة 1": { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} }
+            }
+        };
+    }
+
+    function saveDB() {
+        localStorage.setItem('academic_multi_subject_system_v9', JSON.stringify(db));
+    }
+
+    function getLevelData() {
+        return db.levels[db.currentLevel];
+    }
+
+    function getSubjectData() {
+        let lvl = getLevelData();
+        if (!lvl.subjects[lvl.currentSubject]) {
+            lvl.subjects[lvl.currentSubject] = { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} };
+        }
+        if (lvl.subjects[lvl.currentSubject].maxGrade === undefined) lvl.subjects[lvl.currentSubject].maxGrade = 15;
+        if (!lvl.subjects[lvl.currentSubject].lecCount || lvl.subjects[lvl.currentSubject].lecCount < 1) lvl.subjects[lvl.currentSubject].lecCount = 1;
+        return lvl.subjects[lvl.currentSubject];
+    }
+
+    function renderSubjectDropdown() {
+        let lvl = getLevelData();
+        let select = document.getElementById('subjectSelect');
+        select.innerHTML = '';
+        Object.keys(lvl.subjects).forEach(subj => {
+            let opt = document.createElement('option');
+            opt.value = subj;
+            opt.innerText = subj;
+            if (subj === lvl.currentSubject) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    function switchLevel(newLevel) {
+        db.currentLevel = newLevel;
+        if (!db.levels[newLevel]) {
+            initLevel(newLevel);
+        }
+        saveDB();
+        renderSubjectDropdown();
+        loadCurrentSubjectData();
+        renderHeader();
+        renderTable();
+    }
+
+    function switchSubject(newSubj) {
+        let lvl = getLevelData();
+        lvl.currentSubject = newSubj;
+        saveDB();
+        loadCurrentSubjectData();
+        renderHeader();
+        renderTable();
+    }
+
+    function loadCurrentSubjectData() {
+        let subj = getSubjectData();
+        document.getElementById('profName').value = subj.prof || '';
+        document.getElementById('assistantName').value = subj.assistant || '';
+        document.getElementById('programName').value = subj.program || '';
+        document.getElementById('termName').value = subj.term || '';
+        document.getElementById('maxGrade').value = subj.maxGrade !== undefined ? subj.maxGrade : 15;
+    }
+
+    function updateMeta() {
+        let subj = getSubjectData();
+        subj.prof = document.getElementById('profName').value;
+        subj.assistant = document.getElementById('assistantName').value;
+        subj.program = document.getElementById('programName').value;
+        subj.term = document.getElementById('termName').value;
+        subj.maxGrade = parseFloat(document.getElementById('maxGrade').value) || 15;
+        saveDB();
+    }
+
+    function addSingleStudentManual() {
+        let nameInput = document.getElementById('manualStudentName');
+        let seatInput = document.getElementById('manualSeatNo');
+        let statusInput = document.getElementById('manualStudentStatus');
+        
+        let stName = nameInput.value.trim();
+        let seatNo = seatInput.value.trim();
+        let stStatus = statusInput.value.trim() || 'مستجد';
+
+        if (!stName) {
+            alert("يرجى كتابة اسم الطالب أولاً!");
+            return;
+        }
+
+        let lvl = getLevelData();
+        let exists = lvl.students.some(s => s.name === stName);
+        if (exists) {
+            alert("هذا الطالب موجود بالفعل في الكشف!");
+            return;
+        }
+
+        lvl.students.push({
+            id: seatNo || (202600 + lvl.students.length + 1),
+            name: stName,
+            status: stStatus
+        });
+
+        saveDB();
+        renderTable();
+
+        nameInput.value = '';
+        seatInput.value = '';
+        nameInput.focus();
+    }
+
+    function addLecture() {
+        let subj = getSubjectData();
+        subj.lecCount = (subj.lecCount || 1) + 1;
+        saveDB();
+        renderHeader();
+        renderTable();
+    }
+
+    function removeLastLecture() {
+        let subj = getSubjectData();
+        if (subj.lecCount <= 1) {
+            alert("لا يمكن تقليل المحاضرات عن محاضرة واحدة!");
+            return;
+        }
+        if (confirm(`هل أنت تأكد من حذف العمود الخاص بالمحاضرة رقم (${subj.lecCount})؟`)) {
+            delete subj.dates[subj.lecCount];
+            subj.lecCount--;
+            saveDB();
+            renderHeader();
+            renderTable();
+        }
+    }
+
+    function addNewSubjectPrompt() {
+        let name = prompt("أدخل اسم المادة الجديدة:");
+        if (name && name.trim()) {
+            name = name.trim();
+            let lvl = getLevelData();
+            if (!lvl.subjects[name]) {
+                lvl.subjects[name] = { prof: "", assistant: "", program: "", term: "", maxGrade: 15, lecCount: 1, dates: {}, attendance: {} };
+                lvl.currentSubject = name;
+                saveDB();
+                renderSubjectDropdown();
+                loadCurrentSubjectData();
+                renderHeader();
+                renderTable();
+            } else {
+                alert("هذه المادة موجودة بالفعل!");
+            }
+        }
+    }
+
+    function deleteCurrentSubjectPrompt() {
+        let lvl = getLevelData();
+        let cur = lvl.currentSubject;
+        if (Object.keys(lvl.subjects).length <= 1) {
+            alert("لا يمكنك حذف المادة الوحيدة المتبقية!");
+            return;
+        }
+        if (confirm(`هل أنت تأكد من حذف مادة (${cur}) ببيانات غيابها ودرجاتها؟`)) {
+            delete lvl.subjects[cur];
+            lvl.currentSubject = Object.keys(lvl.subjects)[0];
+            saveDB();
+            renderSubjectDropdown();
+            loadCurrentSubjectData();
+            renderHeader();
+            renderTable();
+        }
+    }
+
+    function renderHeader() {
+        let subj = getSubjectData();
+        let count = subj.lecCount || 1;
+
+        document.getElementById('lecturesGroupHeader').colSpan = count;
+        document.getElementById('totalLecturesCnt').innerText = count;
+
+        const row = document.getElementById('lectureHeaderRow');
+        let html = '';
+        for (let i = 1; i <= count; i++) {
+            let dVal = subj.dates[i] || '';
+            html += `
+                <th class="lec-col">
+                    م${i}
+                    <input type="date" class="date-input" value="${dVal}" onchange="updateDate(${i}, this.value)">
+                </th>
+            `;
+        }
+        html += `
+            <th class="stat-col">حضور</th>
+            <th class="stat-col">غياب</th>
+            <th class="stat-col">% الحضور</th>
+            <th class="grade-col" style="background:#b45309;">الدرجة المستحقة</th>
+            <th class="stat-col">% الغياب</th>
+        `;
+        row.innerHTML = html;
+    }
+
+    function updateDate(lecNum, val) {
+        let subj = getSubjectData();
+        subj.dates[lecNum] = val;
+        saveDB();
+    }
+
+    function setFilter(filterType) {
+        activeFilter = filterType;
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
+        let bar = document.getElementById('filterInfoBar');
+        let txt = document.getElementById('filterInfoText');
+
+        if (filterType === 'all') {
+            document.getElementById('card-all').classList.add('active-filter');
+            bar.style.display = 'none';
+        } else if (filterType === 'warning') {
+            document.getElementById('card-warning').classList.add('active-filter');
+            bar.style.display = 'flex';
+            txt.innerText = '🔍 تم تصفية الكشف: الطلاب المستحقين لـ (إنذار غياب ≥ 15%)';
+        } else if (filterType === 'banned') {
+            document.getElementById('card-banned').classList.add('active-filter');
+            bar.style.display = 'flex';
+            txt.innerText = '🚨 تم تصفية الكشف: الطلاب المستحقين لـ (حرمان من الامتحان ≥ 25%)';
+        }
+
+        renderTable();
+    }
+
+    document.getElementById('excelFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+            let headerRowIndex = -1;
+            let nameColIndex = -1;
+            let seatColIndex = -1;
+            let statusColIndex = -1;
+
+            for (let r = 0; r < jsonData.length; r++) {
+                let row = jsonData[r];
+                if (!row) continue;
+
+                for (let c = 0; c < row.length; c++) {
+                    let cellVal = row[c] ? row[c].toString().trim().toLowerCase() : '';
+
+                    if (cellVal.includes('اسم الطالب') || cellVal === 'الاسم' || cellVal === 'اسم' || cellVal === 'الطالب') {
+                        headerRowIndex = r;
+                        nameColIndex = c;
+                    }
+                    if (cellVal.includes('حالة الطالب') || cellVal.includes('الحالة') || cellVal === 'حالة') {
+                        statusColIndex = c;
+                    }
+                    if (cellVal.includes('جلوس') || cellVal.includes('كود') || cellVal.includes('رقم الجلوس') || cellVal === 'م') {
+                        if (cellVal !== 'مسلسل') seatColIndex = c;
+                    }
+                }
+                if (headerRowIndex !== -1) break;
+            }
+
+            if (headerRowIndex === -1) {
+                headerRowIndex = 0;
+                nameColIndex = 1;
+                seatColIndex = 0;
+                statusColIndex = 2;
+            }
+
+            let importedStudents = [];
+            for (let r = headerRowIndex + 1; r < jsonData.length; r++) {
+                let row = jsonData[r];
+                if (!row || row.length === 0) continue;
+
+                let name = row[nameColIndex] ? row[nameColIndex].toString().trim() : '';
+                let seatNo = (seatColIndex !== -1 && row[seatColIndex]) ? row[seatColIndex].toString().trim() : '';
+                let stStatus = (statusColIndex !== -1 && row[statusColIndex]) ? row[statusColIndex].toString().trim() : 'مستجد';
+
+                if (!name && row[nameColIndex + 1]) {
+                    name = row[nameColIndex + 1].toString().trim();
+                }
+
+                if (name && name !== 'اسم الطالب' && name !== 'الاسم') {
+                    importedStudents.push({
+                        id: seatNo || (202600 + importedStudents.length + 1),
+                        name: name,
+                        status: stStatus || 'مستجد'
+                    });
+                }
+            }
+
+            if (importedStudents.length > 0) {
+                let lvl = getLevelData();
+                lvl.students = importedStudents;
+                saveDB();
+                renderTable();
+                alert(`تم استيراد ${importedStudents.length} طالب بنجاح مع حالاتهم المدونة بملف الإكسيل.`);
+            } else {
+                alert("لم يتم العثور على أسماء طلاب داخل الملف!");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        this.value = '';
+    });
+
+    function toggleStatus(studentName, lecNum) {
+        let subj = getSubjectData();
+        if (!subj.attendance[studentName]) subj.attendance[studentName] = {};
+
+        let current = subj.attendance[studentName][lecNum] || 'ح';
+        let next = 'غ';
+        if (current === 'غ') next = 'ع';
+        else if (current === 'ع') next = 'ح';
+
+        subj.attendance[studentName][lecNum] = next;
+        saveDB();
+        renderTable();
+    }
+
+    function renderTable() {
+        let lvl = getLevelData();
+        let subj = getSubjectData();
+        let count = subj.lecCount || 1;
+        let maxG = subj.maxGrade !== undefined ? parseFloat(subj.maxGrade) : 15;
+        if (isNaN(maxG) || maxG <= 0) maxG = 15;
+
+        const tbody = document.getElementById('studentsTbody');
+        tbody.innerHTML = '';
+
+        let warning = 0, banned = 0;
+        let displayRowIdx = 1;
+
+        lvl.students.forEach((st, idx) => {
+            if (!subj.attendance[st.name]) subj.attendance[st.name] = {};
+
+            let present = 0, absent = 0, excused = 0;
+
+            for (let i = 1; i <= count; i++) {
+                let status = subj.attendance[st.name][i] || 'ح';
+                if (status === 'ح') present++;
+                else if (status === 'غ') absent++;
+                else if (status === 'ع') excused++;
+            }
+
+            let absRatio = (absent / count);
+            let attPercent = ((present / count) * 100).toFixed(1) + '%';
+            let absPercent = (absRatio * 100).toFixed(1) + '%';
+
+            let calculatedGrade = ((present / count) * maxG).toFixed(2);
+            if (calculatedGrade.endsWith('.00')) calculatedGrade = parseInt(calculatedGrade);
+
+            let filterCat = 'regular';
+            let alertBadge = '<span class="badge badge-ok">منتظم</span>';
+
+            if (absRatio >= 0.25) {
+                banned++;
+                filterCat = 'banned';
+                alertBadge = '<span class="badge badge-danger">🚨 حرمان</span>';
+            } else if (absRatio >= 0.15) {
+                warning++;
+                filterCat = 'warning';
+                alertBadge = '<span class="badge badge-warning">⚠️ إنذار</span>';
+            }
+
+            if (activeFilter !== 'all' && activeFilter !== filterCat) {
+                return;
+            }
+
+            let tr = document.createElement('tr');
+            let studentStatusText = st.status || 'مستجد';
+
+            let rowHtml = `
+                <td>${displayRowIdx++}</td>
+                <td>${st.id}</td>
+                <td style="text-align: right; font-weight: bold;">${st.name}</td>
+                <td><span class="badge badge-info">${studentStatusText}</span></td>
+            `;
+
+            for (let i = 1; i <= count; i++) {
+                let status = subj.attendance[st.name][i] || 'ح';
+                let cssClass = status === 'ح' ? 'st-p' : (status === 'غ' ? 'st-a' : 'st-e');
+                rowHtml += `<td><div class="status-cell ${cssClass}" onclick="toggleStatus('${st.name}', ${i})">${status}</div></td>`;
+            }
+
+            rowHtml += `
+                <td><strong style="color:#065f46;">${present}</strong></td>
+                <td><strong style="color:#991b1b;">${absent}</strong></td>
+                <td><strong>${attPercent}</strong></td>
+                <td><span class="grade-badge">${calculatedGrade}</span></td>
+                <td><strong>${absPercent}</strong></td>
+                <td>${alertBadge}</td>
+                <td><button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="deleteStudent(${idx})">حذف</button></td>
+            `;
+
+            tr.innerHTML = rowHtml;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('totalStudentsCnt').innerText = lvl.students.length;
+        document.getElementById('warningCnt').innerText = warning;
+        document.getElementById('bannedCnt').innerText = banned;
+    }
+
+    function deleteStudent(idx) {
+        let lvl = getLevelData();
+        if (confirm(`هل أنت تأكد من حذف الطالب (${lvl.students[idx].name}) من هذه الفرقة؟`)) {
+            lvl.students.splice(idx, 1);
+            saveDB();
+            renderTable();
+        }
+    }
+
+    function clearStudentsList() {
+        let lvl = getLevelData();
+        if (confirm(`⚠️ هل تريد مسح أسماء الطلاب بالكامل لـ (${db.currentLevel})؟`)) {
+            lvl.students = [];
+            saveDB();
+            renderTable();
+        }
+    }
+
+    function manualSave() {
+        saveDB();
+        alert("تم حفظ جميع التعديلات بنجاح!");
+    }
+
+    function getBase64Image(imgId) {
+        const img = document.getElementById(imgId);
+        if (!img || img.style.display === 'none' || !img.src) return null;
+        
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL("image/png");
+        return dataURL.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+    }
+
+    function getColLetter(colIndex) {
+        let temp, letter = '';
+        while (colIndex > 0) {
+            temp = (colIndex - 1) % 26;
+            letter = String.fromCharCode(65 + temp) + letter;
+            colIndex = (colIndex - temp - 1) / 26;
+        }
+        return letter;
+    }
+
+    async function exportExcelWithStyles() {
+        let lvl = getLevelData();
+        let subj = getSubjectData();
+        let count = subj.lecCount || 1;
+        let maxG = subj.maxGrade !== undefined ? parseFloat(subj.maxGrade) : 15;
+
+        if (lvl.students.length === 0) {
+            alert("لا توجد أسماء طلاب للتصدير!");
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('سجل متابعة الحضور والدرجات', { views: [{ rtl: true }] });
+
+        const univLogoBase64 = getBase64Image('univLogoPreview');
+        const facultyLogoBase64 = getBase64Image('facultyLogoPreview');
+
+        if (univLogoBase64) {
+            const univImageId = workbook.addImage({
+                base64: univLogoBase64,
+                extension: 'png',
+            });
+            worksheet.addImage(univImageId, {
+                tl: { col: 0, row: 0 },
+                ext: { width: 80, height: 80 }
+            });
+        }
+
+        if (facultyLogoBase64) {
+            const facultyImageId = workbook.addImage({
+                base64: facultyLogoBase64,
+                extension: 'png',
+            });
+            const totalCols = 4 + count + 6;
+            worksheet.addImage(facultyImageId, {
+                tl: { col: totalCols - 1, row: 0 },
+                ext: { width: 80, height: 80 }
+            });
+        }
+
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+
+        let headerOrgRow = worksheet.addRow(['جامعة طيبة التكنولوجية - كلية تكنولوجيا الصناعة والطاقة']);
+        headerOrgRow.font = { bold: true, size: 13, color: { argb: '0284C7' } };
+        headerOrgRow.alignment = { horizontal: 'center' };
+
+        let headerTitleRow = worksheet.addRow(['سجل متابعة الحضور والغياب والدرجات']);
+        headerTitleRow.font = { bold: true, size: 16, color: { argb: '1E293B' } };
+        headerTitleRow.alignment = { horizontal: 'center' };
+
+        worksheet.addRow(['📍 الفرقة الدراسية:', db.currentLevel, '', '📘 اسم المادة:', lvl.currentSubject]);
+        worksheet.addRow(['👨‍🏫 أستاذ المادة (الدكتور):', subj.prof || '-', '', '🛠️ المعيد / الهيئة المعاونة:', subj.assistant || '-']);
+        worksheet.addRow(['🎓 البرنامج / التخصص:', subj.program || '-', '', '📅 الترم / السنة الدراسية:', subj.term || '-']);
+        worksheet.addRow(['🎯 إجمالي درجة الحضور:', maxG]);
+        worksheet.addRow([]);
+
+        for (let r = 7; r <= 10; r++) {
+            let row = worksheet.getRow(r);
+            row.eachCell((cell, colNumber) => {
+                if (colNumber % 3 !== 0) {
+                    cell.font = { bold: true, size: 11 };
+                }
+            });
+        }
+
+        let row1Data = ['مسلسل', 'رقم الجلوس', 'اسم الطالب', 'حالة الطالب'];
+        for (let i = 1; i <= count; i++) {
+            row1Data.push(`م${i}`);
+        }
+        row1Data.push('حضور', 'غياب', '% الحضور', 'الدرجة المستحقة', '% الغياب', 'حالة الغياب / التنبيه');
+
+        let headerRow1 = worksheet.addRow(row1Data);
+
+        let row2Data = ['', '', '', ''];
+        for (let i = 1; i <= count; i++) {
+            let formattedDate = formatDateFormatted(subj.dates[i]);
+            row2Data.push(formattedDate ? `ت: ${formattedDate}` : '');
+        }
+        let headerRow2 = worksheet.addRow(row2Data);
+
+        headerRow1.eachCell((cell, colNumber) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+
+            if (colNumber <= 4) {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E293B' } };
+            } else if (colNumber <= 4 + count) {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '334155' } };
+            } else if (colNumber === 4 + count + 4) {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B45309' } };
+            } else if (colNumber === 4 + count + 6) {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'BE123C' } };
+            } else {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0D9488' } };
+            }
+        });
+
+        headerRow2.eachCell((cell) => {
+            cell.font = { size: 9, italic: true, color: { argb: 'FFFFFF' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '475569' } };
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        });
+
+        const startLecCol = 5;
+        const endLecCol = 4 + count;
+        const startLecLetter = getColLetter(startLecCol);
+        const endLecLetter = getColLetter(endLecCol);
+
+        const presentColLetter = getColLetter(endLecCol + 1);
+        const absentColLetter = getColLetter(endLecCol + 2);
+        const attPercentColLetter = getColLetter(endLecCol + 3);
+        const gradeColLetter = getColLetter(endLecCol + 4);
+        const absPercentColLetter = getColLetter(endLecCol + 5);
+
+        let firstDataRowNumber = 14;
+
+        lvl.students.forEach((st, idx) => {
+            let rowVals = [idx + 1, st.id, st.name, st.status || 'مستجد'];
+
+            for (let i = 1; i <= count; i++) {
+                let stVal = (subj.attendance[st.name] && subj.attendance[st.name][i]) ? subj.attendance[st.name][i] : 'ح';
+                rowVals.push(stVal);
+            }
+
+            rowVals.push(0, 0, 0, 0, 0, '');
+
+            let addedRow = worksheet.addRow(rowVals);
+            let rowNum = addedRow.number;
+
+            addedRow.getCell(endLecCol + 1).value = { formula: `COUNTIF(${startLecLetter}${rowNum}:${endLecLetter}${rowNum}, "ح")` };
+            addedRow.getCell(endLecCol + 2).value = { formula: `COUNTIF(${startLecLetter}${rowNum}:${endLecLetter}${rowNum}, "غ")` };
+            addedRow.getCell(endLecCol + 3).value = { formula: `${presentColLetter}${rowNum}/${count}` };
+            addedRow.getCell(endLecCol + 3).numFmt = '0.0%';
+
+            addedRow.getCell(endLecCol + 4).value = { formula: `ROUND((${presentColLetter}${rowNum}/${count})*B10, 2)` };
+
+            addedRow.getCell(endLecCol + 5).value = { formula: `${absentColLetter}${rowNum}/${count}` };
+            addedRow.getCell(endLecCol + 5).numFmt = '0.0%';
+
+            addedRow.getCell(endLecCol + 6).value = { 
+                formula: `IF(${absPercentColLetter}${rowNum}>=0.25, "حرمان", IF(${absPercentColLetter}${rowNum}>=0.15, "إنذار", "منتظم"))` 
+            };
+
+            addedRow.eachCell((cell, colNumber) => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = { 
+                    top: { style: 'thin', color: { argb: 'CBD5E1' } }, 
+                    left: { style: 'thin', color: { argb: 'CBD5E1' } }, 
+                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } }, 
+                    right: { style: 'thin', color: { argb: 'CBD5E1' } } 
+                };
+
+                if (colNumber === 3) cell.alignment = { vertical: 'middle', horizontal: 'right' };
+
+                if (colNumber === endLecCol + 4) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF3C7' } };
+                    cell.font = { bold: true, color: { argb: '92400E' } };
+                }
+
+                if (colNumber === endLecCol + 6) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E0F2FE' } };
+                    cell.font = { bold: true, color: { argb: '0369A1' } };
+                }
+            });
+        });
+
+        let lastDataRowNumber = firstDataRowNumber + lvl.students.length - 1;
+        let rangeRef = `${startLecLetter}${firstDataRowNumber}:${endLecLetter}${lastDataRowNumber}`;
+
+        worksheet.addConditionalFormatting({
+            ref: rangeRef,
+            rules: [
+                {
+                    type: 'cellIs',
+                    operator: 'equal',
+                    formulae: ['"ح"'],
+                    style: {
+                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'D1FAE5' } },
+                        font: { color: { argb: '065F46' }, bold: true }
+                    }
+                },
+                {
+                    type: 'cellIs',
+                    operator: 'equal',
+                    formulae: ['"غ"'],
+                    style: {
+                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FEE2E2' } },
+                        font: { color: { argb: '991B1B' }, bold: true }
+                    }
+                },
+                {
+                    type: 'cellIs',
+                    operator: 'equal',
+                    formulae: ['"ع"'],
+                    style: {
+                        fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FEF3C7' } },
+                        font: { color: { argb: '92400E' }, bold: true }
+                    }
+                }
+            ]
+        });
+
+        worksheet.columns.forEach(column => { column.width = 14; });
+        worksheet.getColumn(3).width = 28;
+        worksheet.getColumn(endLecCol + 6).width = 20;
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `سجل_${db.currentLevel}_${lvl.currentSubject}.xlsx`);
+    }
+
+    function uploadLogo(input, previewId) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let img = document.getElementById(previewId);
+                img.src = e.target.result;
+                img.style.display = 'block';
+
+                let label = input.parentElement.querySelector('.logo-label');
+                if (label) label.style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    window.onload = loadDB;
+</script>
+</body>
+</html>

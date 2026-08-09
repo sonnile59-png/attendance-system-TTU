@@ -143,6 +143,7 @@
             border-radius: 6px;
             outline: none;
             font-size: 12px;
+            box-sizing: border-box;
         }
 
         .search-box i {
@@ -646,6 +647,12 @@
                 
                 <button class="btn btn-add-lec" onclick="addLecture()">➕ إضافة محاضرة جديدة</button>
                 <button class="btn btn-danger btn-del-lec" onclick="removeLastLecture()">➖ حذف آخر محاضرة</button>
+            </div>
+
+            <!-- 🔍 مربع البحث المباشر للطلاب -->
+            <div class="search-box" style="max-width: 300px; margin: 0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="studentSearchInput" placeholder="ابحث باسم الطالب أو رقم الجلوس..." oninput="renderTable()">
             </div>
         </div>
 
@@ -1332,10 +1339,15 @@
         alert("تم حفظ جميع التعديلات والبيانات بنجاح في ذاكرة المتصفح!");
     }
 
+    /* دالة عرض وتصفية جدول الطلاب الفورية (تشمل التصفية بالاسم ورقم الجلوس) */
     function renderTable() {
         let levelData = db.levels[db.currentLevel];
         let subData = levelData.subjects[levelData.currentSubject];
         let lecCount = subData.lecCount || 1;
+
+        // جلب قيمة البحث المباشرة
+        let searchInput = document.getElementById('studentSearchInput');
+        let searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
         let lecturesGroupHeader = document.getElementById('lecturesGroupHeader');
         if (lecturesGroupHeader) lecturesGroupHeader.colSpan = lecCount;
@@ -1379,9 +1391,12 @@
         let warningCount = 0;
         let bannedCount = 0;
 
+        // تصفية الطلاب بالاسم أو رقم الجلوس أو حسب حالة الإنذار/الحرمان
         let filteredStudents = levelData.students.filter(st => {
-            let seat = st.seatNo;
+            let seat = String(st.seatNo || '').toLowerCase();
+            let name = String(st.name || '').toLowerCase();
             let absentCount = 0;
+
             for (let i = 1; i <= lecCount; i++) {
                 let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
                 if (stAtt === 'غ') absentCount++;
@@ -1394,9 +1409,15 @@
             if (isWarn) warningCount++;
             if (isBan) bannedCount++;
 
-            if (activeFilter === 'warning') return isWarn;
-            if (activeFilter === 'banned') return isBan;
-            return true;
+            // تطبيق البحث النصي
+            let matchesSearch = searchVal === '' || name.includes(searchVal) || seat.includes(searchVal);
+
+            // تطبيق الفلتر السريع
+            let matchesFilter = true;
+            if (activeFilter === 'warning') matchesFilter = isWarn;
+            if (activeFilter === 'banned') matchesFilter = isBan;
+
+            return matchesSearch && matchesFilter;
         });
 
         document.getElementById('totalStudentsCnt').innerText = totalStudents;
@@ -1406,7 +1427,7 @@
 
         if (filteredStudents.length === 0) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="${10 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد بيانات طلاب مطابقة للعرض حالياً.</td>`;
+            tr.innerHTML = `<td colspan="${10 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد نتائج تطابق بحثك.</td>`;
             tbody.appendChild(tr);
             return;
         }

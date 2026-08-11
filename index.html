@@ -78,7 +78,7 @@
 
         .auth-form-group { margin-bottom: 12px; text-align: right; }
         .auth-form-group label { display: block; font-weight: bold; font-size: 12px; color: #475569; margin-bottom: 4px; }
-        .auth-form-group input { width: 100%; padding: 9px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box; }
+        .auth-form-group input[type="text"], .auth-form-group input[type="password"] { width: 100%; padding: 9px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box; }
         
         .auth-btn { width: 100%; padding: 9px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 8px; }
         .auth-btn:hover { background: #1d4ed8; }
@@ -357,7 +357,7 @@
             .controls-bar, .logo-label, .auth-logo-label, .btn-danger, th:last-child, td:last-child, 
             .filter-info-bar, .btn-del-lec, .add-student-box, .bottom-actions-bar, .stats-grid, 
             .user-top-bar, .faculty-input-box input, .detailed-panel, .subject-bar .nav-group button, 
-            select.select-custom, .summary-card span:last-child, .date-input { 
+            select.select-custom, .summary-card span:last-child, .date-input, .reorder-btns { 
                 display: none !important; 
             }
 
@@ -432,6 +432,13 @@
             <label>كلمة المرور:</label>
             <input type="password" id="loginPass" placeholder="أدخل كلمة المرور...">
         </div>
+        
+        <!-- خيار تذكرني المحدث -->
+        <div class="auth-form-group" style="display: flex; align-items:center; gap: 8px;">
+            <input type="checkbox" id="rememberMe" style="width: auto; cursor: pointer;">
+            <label for="rememberMe" style="margin: 0; cursor: pointer; font-weight: normal; font-size: 12px;">تذكر بياناتي في المرات القادمة</label>
+        </div>
+
         <button class="auth-btn" onclick="handleLogin()">دخول للنظام</button>
 
         <div class="auth-footer-credit">
@@ -440,11 +447,14 @@
         </div>
     </div>
 
-    <!-- 2. لوحة تحكم الأدمن -->
+    <!-- 2. لوحة تحكم الأدمن (تم نقل زر الدخول للسجلات إلى الأعلى) -->
     <div id="adminPanel" class="admin-panel-box">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
             <h3 style="margin:0; color: var(--primary);"><i class="fa-solid fa-users-gear"></i> لوحة تحكم المدير - إدارة المستخدمين</h3>
-            <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="logout()">تسجيل الخروج</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-primary" style="padding:4px 12px; font-size:11px;" onclick="showMainSystemFromAdmin()">الدخول إلى سجلات الرصد ➡️</button>
+                <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="logout()">تسجيل الخروج</button>
+            </div>
         </div>
 
         <!-- إضافة مستخدم جديد -->
@@ -500,10 +510,6 @@
 
         <h4 style="margin: 0 0 8px 0; color: var(--primary);"><i class="fa-solid fa-list-check"></i> سجل الأنشطة الشامل للمنصة:</h4>
         <div id="globalAuditLog" class="audit-log-container"></div>
-
-        <div style="margin-top: 15px; text-align: left;">
-            <button class="btn btn-primary" onclick="showMainSystemFromAdmin()">الدخول إلى سجلات الرصد ➡️</button>
-        </div>
     </div>
 
     <!-- 3. التطبيق الرئيسي (السجل والدرجات) -->
@@ -669,6 +675,7 @@
                 <thead>
                     <tr id="topHeaderRow">
                         <th rowspan="2">مسلسل</th>
+                        <th rowspan="2">الترتيب</th>
                         <th rowspan="2">رقم الجلوس</th>
                         <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
                         <th rowspan="2">حالة الطالب</th>
@@ -741,7 +748,7 @@
     }
 
     function loadDB() {
-        let saved = localStorage.getItem('academic_auth_system_db_v18');
+        let saved = localStorage.getItem('academic_auth_system_db_v19');
         if (saved) {
             try { db = JSON.parse(saved); } catch(e){}
         }
@@ -751,10 +758,24 @@
         if (!db.logs) db.logs = [];
         if (!db.facultyNameCustom) db.facultyNameCustom = "تكنولوجيا صناعة وطاقة";
         updateAuthLogoUI();
+
+        // التحقق مما إذا كان المستخدم قد فعل "تذكرني" مسبقاً
+        let savedUser = localStorage.getItem('saved_auth_user');
+        let savedPass = localStorage.getItem('saved_auth_pass');
+
+        if (savedUser && savedPass && db.users[savedUser] && db.users[savedUser].pass === savedPass && db.users[savedUser].active) {
+            currentUser = savedUser;
+            document.getElementById('authScreen').style.display = 'none';
+            if (db.users[savedUser].role === 'admin') {
+                openAdminPanel();
+            } else {
+                openMainSystem();
+            }
+        }
     }
 
     function saveDB() {
-        localStorage.setItem('academic_auth_system_db_v18', JSON.stringify(db));
+        localStorage.setItem('academic_auth_system_db_v19', JSON.stringify(db));
     }
 
     function updateFacultyName(val) {
@@ -842,6 +863,7 @@
     function handleLogin() {
         let u = document.getElementById('loginUser').value.trim();
         let p = document.getElementById('loginPass').value.trim();
+        let remember = document.getElementById('rememberMe').checked;
         
         if (!db.users[u] || db.users[u].pass !== p) {
             alert("اسم المستخدم أو كلمة المرور غير صحيحة!");
@@ -853,6 +875,15 @@
         }
 
         currentUser = u;
+        
+        if (remember) {
+            localStorage.setItem('saved_auth_user', u);
+            localStorage.setItem('saved_auth_pass', p);
+        } else {
+            localStorage.removeItem('saved_auth_user');
+            localStorage.removeItem('saved_auth_pass');
+        }
+
         logActivity(`تسجيل دخول ناجح للمستخدم: ${u}`);
         document.getElementById('authScreen').style.display = 'none';
         
@@ -865,11 +896,15 @@
 
     function logout() {
         currentUser = null;
+        localStorage.removeItem('saved_auth_user');
+        localStorage.removeItem('saved_auth_pass');
+
         document.getElementById('adminPanel').style.display = 'none';
         document.getElementById('mainSystem').style.display = 'none';
         document.getElementById('authScreen').style.display = 'block';
         document.getElementById('loginUser').value = '';
         document.getElementById('loginPass').value = '';
+        document.getElementById('rememberMe').checked = false;
         updateAuthLogoUI();
     }
 
@@ -911,7 +946,6 @@
         renderTable();
     }
 
-    /* عرض إدارة المستخدمين في لوحة الأدمن + الفلترة المباشرة */
     function renderAdminUsersTable() {
         let tbody = document.getElementById('adminUsersTbody');
         if (!tbody) return;
@@ -1270,6 +1304,53 @@
         }
     }
 
+    function moveStudentUp(index) {
+        let levelData = db.levels[db.currentLevel];
+        if (index > 0) {
+            let temp = levelData.students[index];
+            levelData.students[index] = levelData.students[index - 1];
+            levelData.students[index - 1] = temp;
+            levelData.students.forEach((s, idx) => s.serial = idx + 1);
+            saveDB();
+            renderTable();
+        }
+    }
+
+    function moveStudentDown(index) {
+        let levelData = db.levels[db.currentLevel];
+        if (index < levelData.students.length - 1) {
+            let temp = levelData.students[index];
+            levelData.students[index] = levelData.students[index + 1];
+            levelData.students[index + 1] = temp;
+            levelData.students.forEach((s, idx) => s.serial = idx + 1);
+            saveDB();
+            renderTable();
+        }
+    }
+
+    function updateStudentInline(index, field, value) {
+        let levelData = db.levels[db.currentLevel];
+        if (levelData.students[index]) {
+            let trimmedVal = value.trim();
+            if (field === 'seatNo') {
+                let exists = levelData.students.some((s, idx) => idx !== index && s.seatNo === trimmedVal);
+                if (exists) {
+                    alert("رقم الجلوس هذا موجود بالفعل لطالب آخر!");
+                    renderTable();
+                    return;
+                }
+                let oldSeat = levelData.students[index].seatNo;
+                let subData = levelData.subjects[levelData.currentSubject];
+                if (subData.attendance[oldSeat]) {
+                    subData.attendance[trimmedVal] = subData.attendance[oldSeat];
+                    delete subData.attendance[oldSeat];
+                }
+            }
+            levelData.students[index][field] = trimmedVal;
+            saveDB();
+        }
+    }
+
     function importExcelFile(input) {
         if (!input.files || !input.files[0]) return;
         let file = input.files[0];
@@ -1339,13 +1420,11 @@
         alert("تم حفظ جميع التعديلات والبيانات بنجاح في ذاكرة المتصفح!");
     }
 
-    /* دالة عرض وتصفية جدول الطلاب الفورية (تشمل التصفية بالاسم ورقم الجلوس) */
     function renderTable() {
         let levelData = db.levels[db.currentLevel];
         let subData = levelData.subjects[levelData.currentSubject];
         let lecCount = subData.lecCount || 1;
 
-        // جلب قيمة البحث المباشرة
         let searchInput = document.getElementById('studentSearchInput');
         let searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -1366,6 +1445,7 @@
         
         document.getElementById('topHeaderRow').innerHTML = `
             <th rowspan="2">مسلسل</th>
+            <th rowspan="2">الترتيب</th>
             <th rowspan="2">رقم الجلوس</th>
             <th rowspan="2" style="min-width: 160px;">اسم الطالب</th>
             <th rowspan="2">حالة الطالب</th>
@@ -1391,14 +1471,14 @@
         let warningCount = 0;
         let bannedCount = 0;
 
-        // تصفية الطلاب بالاسم أو رقم الجلوس أو حسب حالة الإنذار/الحرمان
-        let filteredStudents = levelData.students.filter(st => {
+        let filteredStudentsIndices = [];
+        levelData.students.forEach((st, origIdx) => {
             let seat = String(st.seatNo || '').toLowerCase();
             let name = String(st.name || '').toLowerCase();
             let absentCount = 0;
 
             for (let i = 1; i <= lecCount; i++) {
-                let stAtt = subData.attendance[seat] && subData.attendance[seat][i] ? subData.attendance[seat][i] : 'ح';
+                let stAtt = subData.attendance[st.seatNo] && subData.attendance[st.seatNo][i] ? subData.attendance[st.seatNo][i] : 'ح';
                 if (stAtt === 'غ') absentCount++;
             }
             let absentRatio = lecCount > 0 ? (absentCount / lecCount) : 0;
@@ -1409,15 +1489,15 @@
             if (isWarn) warningCount++;
             if (isBan) bannedCount++;
 
-            // تطبيق البحث النصي
             let matchesSearch = searchVal === '' || name.includes(searchVal) || seat.includes(searchVal);
 
-            // تطبيق الفلتر السريع
             let matchesFilter = true;
             if (activeFilter === 'warning') matchesFilter = isWarn;
             if (activeFilter === 'banned') matchesFilter = isBan;
 
-            return matchesSearch && matchesFilter;
+            if (matchesSearch && matchesFilter) {
+                filteredStudentsIndices.push(origIdx);
+            }
         });
 
         document.getElementById('totalStudentsCnt').innerText = totalStudents;
@@ -1425,14 +1505,15 @@
         document.getElementById('warningCnt').innerText = warningCount;
         document.getElementById('bannedCnt').innerText = bannedCount;
 
-        if (filteredStudents.length === 0) {
+        if (filteredStudentsIndices.length === 0) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="${10 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد نتائج تطابق بحثك.</td>`;
+            tr.innerHTML = `<td colspan="${11 + lecCount}" style="text-align:center; padding:25px; color:#64748b;">لا توجد نتائج تطابق بحثك.</td>`;
             tbody.appendChild(tr);
             return;
         }
 
-        filteredStudents.forEach((st, idx) => {
+        filteredStudentsIndices.forEach((origIdx, displayIdx) => {
+            let st = levelData.students[origIdx];
             let seat = st.seatNo;
             let presentCount = 0;
             let absentCount = 0;
@@ -1460,10 +1541,14 @@
 
             let tr = document.createElement('tr');
             let rowHtml = `
-                <td>${st.serial || (idx + 1)}</td>
-                <td><strong>${seat}</strong></td>
-                <td style="text-align:right; font-weight:bold;">${st.name}</td>
-                <td><span class="badge badge-info">${st.status || 'مستجد'}</span></td>
+                <td>${origIdx + 1}</td>
+                <td class="reorder-btns" style="white-space: nowrap;">
+                    <button class="btn btn-primary" style="padding: 2px 5px; font-size: 10px;" onclick="moveStudentUp(${origIdx})" title="تحريك لأعلى"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button class="btn btn-primary" style="padding: 2px 5px; font-size: 10px;" onclick="moveStudentDown(${origIdx})" title="تحريك لأسفل"><i class="fa-solid fa-arrow-down"></i></button>
+                </td>
+                <td><input type="text" value="${seat}" style="width: 80px; padding: 3px; font-size: 11px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px;" onchange="updateStudentInline(${origIdx}, 'seatNo', this.value)"></td>
+                <td style="text-align:right;"><input type="text" value="${st.name}" style="width: 95%; padding: 3px; font-size: 11px; font-weight: bold; border: 1px solid var(--border-color); border-radius: 4px;" onchange="updateStudentInline(${origIdx}, 'name', this.value)"></td>
+                <td><input type="text" value="${st.status || 'مستجد'}" style="width: 100px; padding: 3px; font-size: 11px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px;" onchange="updateStudentInline(${origIdx}, 'status', this.value)"></td>
             `;
 
             for (let i = 1; i <= lecCount; i++) {
@@ -1633,6 +1718,31 @@
     window.onload = function() {
         loadDB();
     };
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDoszWIECoh2d07RlD5_zk9rpYstshK9Ns",
+    authDomain: "attendancesystemttu-64873.firebaseapp.com",
+    projectId: "attendancesystemttu-64873",
+    storageBucket: "attendancesystemttu-64873.firebasestorage.app",
+    messagingSenderId: "1048590828436",
+    appId: "1:1048590828436:web:f04b71a7fd37b838460581"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveToFirebase = async function(data) {
+      try {
+          await setDoc(doc(db, "attendance", "currentTerm"), { content: data });
+          console.log("تم الحفظ على Firebase بنجاح!");
+      } catch (e) {
+          console.error("خطأ أثناء الحفظ على السحابة: ", e);
+      }
+  };
 </script>
 </body>
 </html>
